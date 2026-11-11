@@ -300,7 +300,7 @@ export function limitNodeBuffers(model: Uint8Array, maxBuffers: number): PatchRe
   const replaceSplit = (node: NodeInfo): Uint8Array[] | null => {
     const [data, splitName] = node.inputs;
     const sizes = splitName === undefined ? undefined : int64Values.get(splitName);
-    if (data === undefined || !sizes || sizes.length !== node.outputs.length) return null;
+    if (data === undefined || sizes?.length !== node.outputs.length) return null;
     const out: Uint8Array[] = [];
     let counter = 0;
     // Cada nível agrupa as saídas em até `maxParts` pedaços.
@@ -371,10 +371,7 @@ export function limitNodeBuffers(model: Uint8Array, maxBuffers: number): PatchRe
 
   for (const field of graphFields) {
     const node = nodes.get(field);
-    const tooMany =
-      node !== undefined &&
-      node.domain === '' &&
-      node.inputs.length + node.outputs.length > maxBuffers;
+    const tooMany = node?.domain === '' && node.inputs.length + node.outputs.length > maxBuffers;
     if (node && tooMany && node.op === 'Split' && node.outputs.length > maxParts) {
       const replacement = replaceSplit(node);
       if (replacement) {

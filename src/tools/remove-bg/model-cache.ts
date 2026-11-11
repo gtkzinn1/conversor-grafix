@@ -1,12 +1,45 @@
 /**
- * Download e cache local do modelo de IA (única conexão externa do app, seção 6.4).
- * Roda nos workers (Cache API, fetch e WebCrypto existem lá) e na página (estado e exclusão).
+ * Download e cópia local do modelo de IA (única conexão externa do app, seção 6.4).
+ * Roda nos workers (OPFS, fetch e WebCrypto existem lá) e na página (estado e exclusão).
+ *
+ * O modelo fica no sistema de arquivos privado do site (OPFS), e não na Cache API: o Chrome
+ * recusou guardar na Cache API arquivos acima de algumas centenas de MB ("Unexpected internal
+ * error"), e o modelo padrão tem 897 MB.
  */
 import { AppError } from '../../lib/shared/errors';
 import { formatBytes } from '../../lib/shared/limits';
 import type { ModelVariant } from './models';
 
-const CACHE_NAME = 'conversor-modelo-ia';
+const DIRECTORY = 'modelo-ia';
+/** Cache usado antes da troca para OPFS; apagado junto com os modelos. */
+const LEGACY_CACHE = 'conversor-modelo-ia';
+
+/** Nome do arquivo no OPFS: muda se o modelo mudar (outro hash), nunca reaproveita o antigo. */
+export function modelFileName(model: ModelVariant): string {
+  return `${model.id}-${model.sha256.slice(0, 16)}.onnx`;
+}
+
+async function modelDirectory(create: boolean): Promise<FileSystemDirectoryHandle | null> {
+  const root = await navigator.storage.getDirectory();
+  try {
+    return await root.getDirectoryHandle(DIRECTORY, { create });
+  } catch (error) {
+    if (!create && error instanceof DOMException && error.name === 'NotFoundError') return null;
+    throw error;
+  }
+}
+
+async function modelFile(model: ModelVariant): Promise<File | null> {
+  const directory = await modelDirectory(false);
+  if (!directory) return null;
+  try {
+    const handle = await directory.getFileHandle(modelFileName(model));
+    return await handle.getFile();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'NotFoundError') return null;
+    throw error;
+  }
+}
 
 async function sha256Hex(data: ArrayBuffer): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
@@ -64,40 +97,57 @@ export async function downloadModel(
     throw new AppError('model-integrity', undefined, `SHA-256 recebido: ${hash}`);
   }
 
-  const cache = await caches.open(CACHE_NAME);
-  await cache.put(
-    model.url,
-    new Response(buffer, {
-      headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': String(received) },
-    }),
-  );
+  // `createWritable` grava num arquivo temporário e só troca pelo definitivo no `close`.
+  const directory = await modelDirectory(true);
+  if (!directory) throw new AppError('unexpected', undefined, 'OPFS indisponível.');
+  const handle = await directory.getFileHandle(modelFileName(model), { create: true });
+  const writable = await handle.createWritable();
+  try {
+    await writable.write(buffer);
+    await writable.close();
+  } catch (error) {
+    await writable.abort().catch(() => undefined);
+    await directory.removeEntry(modelFileName(model)).catch(() => undefined);
+    throw new AppError(
+      'model-download',
+      'Não foi possível guardar o modelo de IA neste computador. Confira o espaço livre no disco.',
+      String(error),
+    );
+  }
 }
 
 /**
- * Lê o modelo do cache e confere o SHA-256 de novo (protege contra cache corrompido).
+ * Lê o modelo guardado e confere o SHA-256 de novo (protege contra arquivo corrompido).
  * Se não bater, apaga e pede novo download.
  */
 export async function loadCachedModel(model: ModelVariant): Promise<ArrayBuffer> {
-  const cache = await caches.open(CACHE_NAME);
-  const response = await cache.match(model.url);
-  if (!response) throw new AppError('model-missing');
-  const data = await response.arrayBuffer();
+  const file = await modelFile(model);
+  if (!file) throw new AppError('model-missing');
+  const data = await file.arrayBuffer();
   if (data.byteLength !== model.bytes || (await sha256Hex(data)) !== model.sha256) {
-    await cache.delete(model.url);
-    throw new AppError('model-integrity', undefined, 'O arquivo em cache não confere.');
+    const directory = await modelDirectory(false);
+    await directory?.removeEntry(modelFileName(model)).catch(() => undefined);
+    throw new AppError('model-integrity', undefined, 'O arquivo guardado não confere.');
   }
   return data;
 }
 
-/** Modelos já baixados, pela URL. */
-export async function cachedModelUrls(): Promise<Set<string>> {
-  if (!('caches' in globalThis)) return new Set();
-  const cache = await caches.open(CACHE_NAME);
-  const keys = await cache.keys();
-  return new Set(keys.map((request) => request.url));
+/** Ids dos modelos já baixados (o SHA-256 é conferido ao carregar). */
+export async function cachedModelIds(models: readonly ModelVariant[]): Promise<Set<string>> {
+  const ids = new Set<string>();
+  if (!('storage' in navigator) || !('getDirectory' in navigator.storage)) return ids;
+  for (const model of models) {
+    const file = await modelFile(model);
+    if (file) ids.add(model.id);
+  }
+  return ids;
 }
 
 /** Apaga todos os modelos baixados. */
 export async function deleteCachedModels(): Promise<void> {
-  await caches.delete(CACHE_NAME);
+  const root = await navigator.storage.getDirectory();
+  await root.removeEntry(DIRECTORY, { recursive: true }).catch((error: unknown) => {
+    if (!(error instanceof DOMException && error.name === 'NotFoundError')) throw error;
+  });
+  if ('caches' in globalThis) await caches.delete(LEGACY_CACHE);
 }

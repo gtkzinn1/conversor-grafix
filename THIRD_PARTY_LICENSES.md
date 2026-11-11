@@ -3,16 +3,18 @@
 Este arquivo lista o código e os recursos de terceiros **distribuídos junto com o app** (o que vai para o navegador).
 Ferramentas usadas só no desenvolvimento e na build (Vite, TypeScript, ESLint, Vitest, Playwright etc.) não são distribuídas e não aparecem aqui; as licenças delas estão em `node_modules/` e foram conferidas na adoção (ver `docs/ESPECIFICACAO.md`, seção 11).
 
-| Componente                                                                                                  | Versão                    | Licença     | Uso no app                                   |
-| ----------------------------------------------------------------------------------------------------------- | ------------------------- | ----------- | -------------------------------------------- |
-| [Preact](https://github.com/preactjs/preact)                                                                | 11.1.0                    | MIT         | Interface                                    |
-| [Workbox](https://github.com/GoogleChrome/workbox) (`workbox-window` e módulos embutidos no service worker) | 7.4.1                     | MIT         | Funcionamento offline e aviso de atualização |
-| [Exo 2](https://github.com/googlefonts/Exo-2.0) via `@fontsource-variable/exo-2`                            | 5.3.0                     | SIL OFL 1.1 | Fonte da interface                           |
-| [qpdf](https://github.com/qpdf/qpdf), compilado para WebAssembly (`vendor/qpdf/`)                           | 12.4.2                    | Apache 2.0  | Leitura, reparo e gravação de PDF            |
-| [zlib](https://zlib.net) (dentro do qpdf WebAssembly)                                                       | port do Emscripten 6.0.13 | zlib        | Compressão de PDF                            |
-| [libjpeg](https://ijg.org) do Independent JPEG Group (dentro do qpdf WebAssembly)                           | port do Emscripten 6.0.13 | IJG         | Imagens JPEG em PDF                          |
-| Runtime do [Emscripten](https://emscripten.org) (em `vendor/qpdf/qpdf.js`)                                  | 6.0.13                    | MIT         | Execução do qpdf no navegador                |
-| [PDF.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`)                                                  | 6.4.299                   | Apache 2.0  | Conferência visual do PDF corrigido          |
+| Componente                                                                                                                                                                              | Versão                                            | Licença     | Uso no app                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------- | -------------------------------------------- |
+| [Preact](https://github.com/preactjs/preact)                                                                                                                                            | 11.1.0                                            | MIT         | Interface                                    |
+| [Workbox](https://github.com/GoogleChrome/workbox) (`workbox-window` e módulos embutidos no service worker)                                                                             | 7.4.1                                             | MIT         | Funcionamento offline e aviso de atualização |
+| [Exo 2](https://github.com/googlefonts/Exo-2.0) via `@fontsource-variable/exo-2`                                                                                                        | 5.3.0                                             | SIL OFL 1.1 | Fonte da interface                           |
+| [qpdf](https://github.com/qpdf/qpdf), compilado para WebAssembly (`vendor/qpdf/`)                                                                                                       | 12.4.2                                            | Apache 2.0  | Leitura, reparo e gravação de PDF            |
+| [zlib](https://zlib.net) (dentro do qpdf WebAssembly)                                                                                                                                   | port do Emscripten 6.0.13                         | zlib        | Compressão de PDF                            |
+| [libjpeg](https://ijg.org) do Independent JPEG Group (dentro do qpdf WebAssembly)                                                                                                       | port do Emscripten 6.0.13                         | IJG         | Imagens JPEG em PDF                          |
+| Runtime do [Emscripten](https://emscripten.org) (em `vendor/qpdf/qpdf.js`)                                                                                                              | 6.0.13                                            | MIT         | Execução do qpdf no navegador                |
+| [PDF.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`)                                                                                                                              | 6.4.299                                           | Apache 2.0  | Conferência visual do PDF corrigido          |
+| [ONNX Runtime Web](https://github.com/microsoft/onnxruntime) (`onnxruntime-web`, build JSPI)                                                                                            | 1.31.1                                            | MIT         | Execução do modelo de IA (remover fundo)     |
+| [BiRefNet](https://github.com/ZhengPeng7/BiRefNet), versões ONNX da [`onnx-community`](https://huggingface.co/onnx-community) (baixado do Hugging Face no primeiro uso, não vem no app) | revisões fixas em `src/tools/remove-bg/models.ts` | MIT         | Modelo de IA do remover fundo                |
 
 ---
 
@@ -402,3 +404,57 @@ This software is based in part on the work of the Independent JPEG Group.
 ## Emscripten — MIT
 
 O runtime JavaScript gerado pelo Emscripten (`vendor/qpdf/qpdf.js`) é distribuído sob a licença MIT (Copyright 2010-2024 The Emscripten Authors).
+
+## ONNX Runtime Web — MIT
+
+```
+MIT License
+
+Copyright (c) Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## BiRefNet — MIT
+
+O modelo não é distribuído com o app: é baixado do Hugging Face no primeiro uso, com revisão fixa e SHA-256 conferido.
+
+```
+MIT License
+
+Copyright (c) 2024 ZhengPeng
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

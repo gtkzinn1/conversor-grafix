@@ -28,7 +28,7 @@ const hf = (repo: string, revision: string, file: string) =>
 export const MODEL_VARIANTS: readonly ModelVariant[] = [
   {
     id: 'birefnet-fp16',
-    label: 'BiRefNet (qualidade máxima)',
+    label: 'BiRefNet 1024 na placa de vídeo',
     url: hf('BiRefNet-ONNX', '534d3c82d3bb8b2f0867db6dfbc3a525b8e42f67', 'model_fp16.onnx'),
     bytes: 489_666_272,
     sha256: '3654c741eb80bd926ada8fed1713b506ccf8d30eb1f6487e87eb9f234f33df09',
@@ -38,7 +38,7 @@ export const MODEL_VARIANTS: readonly ModelVariant[] = [
   },
   {
     id: 'birefnet-fp32',
-    label: 'BiRefNet (qualidade máxima, placa sem fp16)',
+    label: 'BiRefNet 1024 na placa de vídeo (sem fp16)',
     url: hf('BiRefNet-ONNX', '534d3c82d3bb8b2f0867db6dfbc3a525b8e42f67', 'model.onnx'),
     bytes: 972_666_916,
     sha256: '58f621f00f5d756097615970a88a791584600dcf7c45b18a0a6267535a1ebd3c',
@@ -48,7 +48,7 @@ export const MODEL_VARIANTS: readonly ModelVariant[] = [
   },
   {
     id: 'birefnet-lite-fp16',
-    label: 'BiRefNet lite (mais leve)',
+    label: 'BiRefNet lite 1024 na placa de vídeo',
     url: hf('BiRefNet_lite-ONNX', 'de15b22ba131738a16dff04aab8bdf8dc32e3ac1', 'model_fp16.onnx'),
     bytes: 114_538_221,
     sha256: 'd39b897ceb16ae654c1731f3dba0cf9b368d9cae74b5a57459b455cc8bfec402',
@@ -58,7 +58,7 @@ export const MODEL_VARIANTS: readonly ModelVariant[] = [
   },
   {
     id: 'birefnet-lite-fp32',
-    label: 'BiRefNet lite (mais leve, placa sem fp16)',
+    label: 'BiRefNet lite 1024 na placa de vídeo (sem fp16)',
     url: hf('BiRefNet_lite-ONNX', 'de15b22ba131738a16dff04aab8bdf8dc32e3ac1', 'model.onnx'),
     bytes: 224_005_088,
     sha256: '5600024376f572a557870a5eb0afb1e5961636bef4e1e22132025467d0f03333',
@@ -69,7 +69,7 @@ export const MODEL_VARIANTS: readonly ModelVariant[] = [
   {
     // Sem WebGPU, os modelos de 1024 px não cabem nos 4 GB de memória do WASM (testado).
     id: 'birefnet-512-fp32',
-    label: 'BiRefNet 512 (sem placa de vídeo)',
+    label: 'BiRefNet 512 no processador',
     url: hf('BiRefNet_512x512-ONNX', 'b0b30aff33d009f6bcd7dacdc3cdcf2f8f42175b', 'model.onnx'),
     bytes: 940_413_603,
     sha256: '617a11ca04cb13a2817bfad605969b4a9a040fceedbaaa46348a3957f0f6c254',
@@ -86,22 +86,27 @@ export interface DeviceSupport {
 }
 
 export function modelsFor(device: DeviceSupport): ModelVariant[] {
-  return MODEL_VARIANTS.filter(
+  const usable = MODEL_VARIANTS.filter(
     (variant) =>
       variant.backend === 'wasm' ||
       (device.webGpu && (!variant.needsShaderF16 || device.shaderF16)),
   );
+  // O padrão primeiro, para aparecer no topo da lista de escolha.
+  return [
+    ...usable.filter((variant) => variant.id === DEFAULT_MODEL_ID),
+    ...usable.filter((variant) => variant.id !== DEFAULT_MODEL_ID),
+  ];
 }
 
-/** Modelo padrão: o de maior qualidade que o computador roda. */
-export function defaultModelFor(device: DeviceSupport): ModelVariant {
-  const id = !device.webGpu
-    ? 'birefnet-512-fp32'
-    : device.shaderF16
-      ? 'birefnet-fp16'
-      : 'birefnet-fp32';
-  const model = findModel(id);
-  if (!model) throw new Error(`Modelo padrão ausente: ${id}`);
+/**
+ * Modelo padrão: BiRefNet 512 no processador (WASM), que roda em qualquer computador.
+ * Os modelos de placa de vídeo ficam como opção: em placas antigas o WebGPU pode travar a placa.
+ */
+export const DEFAULT_MODEL_ID = 'birefnet-512-fp32';
+
+export function defaultModel(): ModelVariant {
+  const model = findModel(DEFAULT_MODEL_ID);
+  if (!model) throw new Error(`Modelo padrão ausente: ${DEFAULT_MODEL_ID}`);
   return model;
 }
 

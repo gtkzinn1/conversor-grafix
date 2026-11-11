@@ -7,8 +7,12 @@
  *   BiRefNet, "blur fusion" em duas passadas) para não sobrar halo do fundo antigo.
  */
 
-const MEAN = [0.485, 0.456, 0.406] as const;
-const STD = [0.229, 0.224, 0.225] as const;
+/** Média e desvio-padrão por canal (R, G, B). */
+const NORMALIZATION = [
+  { mean: 0.485, std: 0.229 },
+  { mean: 0.456, std: 0.224 },
+  { mean: 0.406, std: 0.225 },
+] as const;
 
 /** RGBA (size × size) → Float32 [1, 3, size, size], normalizado como no treino do BiRefNet. */
 export function toInputTensor(rgba: Uint8ClampedArray, size: number): Float32Array {
@@ -16,8 +20,11 @@ export function toInputTensor(rgba: Uint8ClampedArray, size: number): Float32Arr
   if (rgba.length !== plane * 4) throw new RangeError('Tamanho de pixels inesperado.');
   const tensor = new Float32Array(plane * 3);
   for (let i = 0; i < plane; i++) {
-    for (let c = 0; c < 3; c++) {
-      tensor[c * plane + i] = ((rgba[i * 4 + c] ?? 0) / 255 - MEAN[c]!) / STD[c]!;
+    for (let c = 0; c < NORMALIZATION.length; c++) {
+      const channel = NORMALIZATION[c];
+      if (channel === undefined) continue;
+      const { mean, std } = channel;
+      tensor[c * plane + i] = ((rgba[i * 4 + c] ?? 0) / 255 - mean) / std;
     }
   }
   return tensor;
@@ -147,8 +154,10 @@ function coarsePass(rgba: Uint8ClampedArray, alpha: Uint8Array, width: number, h
 
   // Médias por bloco de a, I·a e I·(1−a).
   const sumA = new Float32Array(small);
-  const sumFA = [new Float32Array(small), new Float32Array(small), new Float32Array(small)];
-  const sumBA = [new Float32Array(small), new Float32Array(small), new Float32Array(small)];
+  const channels = [0, 1, 2].map(() => ({
+    fa: new Float32Array(small),
+    ba: new Float32Array(small),
+  }));
   const count = new Float32Array(small);
   for (let y = 0; y < height; y++) {
     const cy = Math.floor(y / COARSE_SCALE) * cw;
@@ -156,28 +165,29 @@ function coarsePass(rgba: Uint8ClampedArray, alpha: Uint8Array, width: number, h
       const i = y * width + x;
       const ci = cy + Math.floor(x / COARSE_SCALE);
       const a = (alpha[i] ?? 0) / 255;
-      sumA[ci]! += a;
-      count[ci]! += 1;
-      for (let c = 0; c < 3; c++) {
+      sumA[ci] = (sumA[ci] ?? 0) + a;
+      count[ci] = (count[ci] ?? 0) + 1;
+      for (let c = 0; c < channels.length; c++) {
+        const channel = channels[c];
+        if (channel === undefined) continue;
+        const { fa, ba } = channel;
         const value = (rgba[i * 4 + c] ?? 0) / 255;
-        sumFA[c]![ci]! += value * a;
-        sumBA[c]![ci]! += value * (1 - a);
+        fa[ci] = (fa[ci] ?? 0) + value * a;
+        ba[ci] = (ba[ci] ?? 0) + value * (1 - a);
       }
     }
   }
   for (let i = 0; i < small; i++) {
     const n = count[i] ?? 1;
-    sumA[i]! /= n;
-    for (let c = 0; c < 3; c++) {
-      sumFA[c]![i]! /= n;
-      sumBA[c]![i]! /= n;
+    sumA[i] = (sumA[i] ?? 0) / n;
+    for (const { fa, ba } of channels) {
+      fa[i] = (fa[i] ?? 0) / n;
+      ba[i] = (ba[i] ?? 0) / n;
     }
   }
 
   boxBlur(sumA, cw, ch, k);
-  for (let c = 0; c < 3; c++) {
-    const fa = sumFA[c]!;
-    const ba = sumBA[c]!;
+  for (const { fa, ba } of channels) {
     boxBlur(fa, cw, ch, k);
     boxBlur(ba, cw, ch, k);
     for (let i = 0; i < small; i++) {
@@ -186,7 +196,7 @@ function coarsePass(rgba: Uint8ClampedArray, alpha: Uint8Array, width: number, h
       ba[i] = (ba[i] ?? 0) / (1 - blurredA + EPS);
     }
   }
-  return { cw, ch, blurredF: sumFA, blurredB: sumBA };
+  return { cw, ch, blurred: channels };
 }
 
 /**
@@ -205,10 +215,15 @@ export function refineForeground(
     throw new RangeError('Tamanho de pixels inesperado.');
   }
   const coarse = coarsePass(rgba, alpha, width, height);
-  const upF = [0, 1, 2].map(() => new Float32Array(width));
-  const upB = [0, 1, 2].map(() => new Float32Array(width));
-  const rowF = [0, 1, 2].map(() => new Float32Array(coarse.cw));
-  const rowB = [0, 1, 2].map(() => new Float32Array(coarse.cw));
+  // Por canal: as duas estimativas da passada larga, numa linha reduzida e na largura original.
+  const rows = coarse.blurred.map(({ fa, ba }) => ({
+    f: fa,
+    b: ba,
+    lineF: new Float32Array(coarse.cw),
+    lineB: new Float32Array(coarse.cw),
+    upF: new Float32Array(width),
+    upB: new Float32Array(width),
+  }));
 
   /** Interpola uma linha da passada larga para a largura original. */
   const upsampleRow = (y: number) => {
@@ -216,17 +231,13 @@ export function refineForeground(
     const y0 = Math.floor(fy);
     const y1 = Math.min(coarse.ch - 1, y0 + 1);
     const wy = fy - y0;
-    for (let c = 0; c < 3; c++) {
-      const f = coarse.blurredF[c]!;
-      const b = coarse.blurredB[c]!;
-      const lineF = rowF[c]!;
-      const lineB = rowB[c]!;
+    for (const { f, b, lineF, lineB, upF, upB } of rows) {
       for (let x = 0; x < coarse.cw; x++) {
         lineF[x] = (f[y0 * coarse.cw + x] ?? 0) * (1 - wy) + (f[y1 * coarse.cw + x] ?? 0) * wy;
         lineB[x] = (b[y0 * coarse.cw + x] ?? 0) * (1 - wy) + (b[y1 * coarse.cw + x] ?? 0) * wy;
       }
-      resample(lineF, coarse.cw, 1, upF[c]!, width, 1);
-      resample(lineB, coarse.cw, 1, upB[c]!, width, 1);
+      resample(lineF, coarse.cw, 1, upF, width, 1);
+      resample(lineB, coarse.cw, 1, upB, width, 1);
     }
   };
 
@@ -239,11 +250,14 @@ export function refineForeground(
     const y1 = Math.min(height, y0 + bandRows);
     const top = Math.max(0, y0 - halo);
     const bottom = Math.min(height, y1 + halo);
-    const rows = bottom - top;
-    const size = rows * width;
+    const bandHeight = bottom - top;
+    const size = bandHeight * width;
     const planeA = new Float32Array(size);
-    const planeFA = [new Float32Array(size), new Float32Array(size), new Float32Array(size)];
-    const planeBA = [new Float32Array(size), new Float32Array(size), new Float32Array(size)];
+    const planes = rows.map((row) => ({
+      ...row,
+      fa: new Float32Array(size),
+      ba: new Float32Array(size),
+    }));
 
     for (let y = top; y < bottom; y++) {
       upsampleRow(y);
@@ -252,23 +266,26 @@ export function refineForeground(
         const j = (y - top) * width + x;
         const a = (alpha[i] ?? 0) / 255;
         planeA[j] = a;
-        for (let c = 0; c < 3; c++) {
+        for (let c = 0; c < planes.length; c++) {
+          const channel = planes[c];
+          if (channel === undefined) continue;
+          const { upF, upB, fa, ba } = channel;
           const original = y < y0 ? carry[((y - carryStart) * width + x) * 4 + c] : rgba[i * 4 + c];
           const image = (original ?? 0) / 255;
-          const bF = upF[c]![x] ?? 0;
-          const bB = upB[c]![x] ?? 0;
+          const bF = upF[x] ?? 0;
+          const bB = upB[x] ?? 0;
           // Primeira estimativa do primeiro plano (fim da passada larga).
           const f1 = clamp01(bF + a * (image - a * bF - (1 - a) * bB));
-          planeFA[c]![j] = f1 * a;
-          planeBA[c]![j] = bB * (1 - a);
+          fa[j] = f1 * a;
+          ba[j] = bB * (1 - a);
         }
       }
     }
 
-    boxBlur(planeA, width, rows, FINE_KERNEL);
-    for (let c = 0; c < 3; c++) {
-      boxBlur(planeFA[c]!, width, rows, FINE_KERNEL);
-      boxBlur(planeBA[c]!, width, rows, FINE_KERNEL);
+    boxBlur(planeA, width, bandHeight, FINE_KERNEL);
+    for (const { fa, ba } of planes) {
+      boxBlur(fa, width, bandHeight, FINE_KERNEL);
+      boxBlur(ba, width, bandHeight, FINE_KERNEL);
     }
 
     carryStart = Math.max(y0, y1 - halo);
@@ -280,10 +297,13 @@ export function refineForeground(
         const j = (y - top) * width + x;
         const a = (alpha[i] ?? 0) / 255;
         const blurredA = planeA[j] ?? 0;
-        for (let c = 0; c < 3; c++) {
+        for (let c = 0; c < planes.length; c++) {
+          const channel = planes[c];
+          if (channel === undefined) continue;
+          const { fa, ba } = channel;
           const image = (rgba[i * 4 + c] ?? 0) / 255;
-          const bF = (planeFA[c]![j] ?? 0) / (blurredA + EPS);
-          const bB = (planeBA[c]![j] ?? 0) / (1 - blurredA + EPS);
+          const bF = (fa[j] ?? 0) / (blurredA + EPS);
+          const bB = (ba[j] ?? 0) / (1 - blurredA + EPS);
           rgba[i * 4 + c] = Math.round(clamp01(bF + a * (image - a * bF - (1 - a) * bB)) * 255);
         }
         rgba[i * 4 + 3] = Math.round(((rgba[i * 4 + 3] ?? 255) * (alpha[i] ?? 0)) / 255);

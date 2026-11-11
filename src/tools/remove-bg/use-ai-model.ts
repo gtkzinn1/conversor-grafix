@@ -1,16 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { readPreference, writePreference } from '../../lib/storage';
+import {
+  clearGpuFailed,
+  gpuFailed,
+  onGpuFailedChange,
+  readPreference,
+  writePreference,
+} from '../../lib/storage';
 import { toAppError, type AppError } from '../../lib/shared/errors';
 import { downloadAiModel } from '../../lib/tasks';
-import { cachedModelUrls, deleteCachedModels } from './model-cache';
-import { defaultModelFor, modelsFor, type DeviceSupport, type ModelVariant } from './models';
+import { cachedModelIds, deleteCachedModels } from './model-cache';
+import { defaultModel, modelsFor, type DeviceSupport, type ModelVariant } from './models';
 
 const PREFERENCE_KEY = 'modelo-ia';
 
 /** WebGPU disponível e, para os modelos fp16, com o recurso `shader-f16`. */
 async function detectDevice(): Promise<DeviceSupport> {
   try {
-    if (!('gpu' in navigator)) return { webGpu: false, shaderF16: false };
+    if (gpuFailed() || !('gpu' in navigator)) return { webGpu: false, shaderF16: false };
     // Com a placa num estado ruim, o pedido pode demorar muito: depois de 10 s, segue sem WebGPU.
     const adapter = await Promise.race([
       navigator.gpu.requestAdapter(),
@@ -40,6 +46,10 @@ export interface AiModel {
   readonly download: () => void;
   readonly cancelDownload: () => void;
   readonly choose: (id: string) => void;
+  /** A placa de vídeo travou antes neste computador e foi desligada para o recorte. */
+  readonly gpuDisabled: boolean;
+  /** Volta a oferecer os modelos de placa de vídeo. */
+  readonly enableGpu: () => void;
   /** Apaga os modelos baixados; o próximo uso pede o download de novo. */
   readonly clear: () => Promise<void>;
 }
@@ -48,25 +58,39 @@ export function useAiModel(): AiModel {
   const [device, setDevice] = useState<DeviceSupport | null>(null);
   const [preferred, setPreferred] = useState(readPreference(PREFERENCE_KEY));
   const [state, setState] = useState<AiModelState>({ status: 'detecting' });
+  const [gpuDisabled, setGpuDisabled] = useState(gpuFailed());
   const controller = useRef<AbortController | null>(null);
 
   const choices = device ? modelsFor(device) : [];
   const model = device
-    ? (choices.find((variant) => variant.id === preferred) ?? defaultModelFor(device))
+    ? (choices.find((variant) => variant.id === preferred) ?? defaultModel())
     : undefined;
 
   const refresh = useCallback(async (target: ModelVariant) => {
-    const cached = await cachedModelUrls().catch(() => new Set<string>());
+    const cached = await cachedModelIds([target]).catch(() => new Set<string>());
     setState(
-      cached.has(target.url)
+      cached.has(target.id)
         ? { status: 'ready', model: target }
         : { status: 'needs-download', model: target },
     );
   }, []);
 
   useEffect(() => {
-    void detectDevice().then(setDevice);
-    return () => controller.current?.abort();
+    let active = true;
+    const detect = () => {
+      setGpuDisabled(gpuFailed());
+      void detectDevice().then((found) => {
+        if (active) setDevice(found);
+      });
+    };
+    detect();
+    // A placa travou num recorte (ou foi religada em "Sobre"): refaz a lista de modelos.
+    const stop = onGpuFailedChange(detect);
+    return () => {
+      active = false;
+      stop();
+      controller.current?.abort();
+    };
   }, []);
 
   useEffect(() => {
@@ -120,5 +144,19 @@ export function useAiModel(): AiModel {
     if (model) await refresh(model);
   }, [model, refresh]);
 
-  return { state, device, choices, download, cancelDownload, choose, clear };
+  const enableGpu = useCallback(() => {
+    clearGpuFailed();
+  }, []);
+
+  return {
+    state,
+    device,
+    choices,
+    download,
+    cancelDownload,
+    choose,
+    clear,
+    gpuDisabled,
+    enableGpu,
+  };
 }
