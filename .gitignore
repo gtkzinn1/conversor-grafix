@@ -1,0 +1,31 @@
+# Dependências e build
+node_modules/
+dist/
+dev-dist/
+*.tsbuildinfo
+
+# Testes
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Ambiente (o projeto não usa segredos; nunca commitar .env real)
+.env
+.env.*
+!.env.example
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Configuração local do Claude Code
+.claude/
