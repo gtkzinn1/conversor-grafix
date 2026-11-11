@@ -10,6 +10,13 @@ updates:
     # Espera a versão nova ter alguns dias de uso antes de sugerir (proteção contra pacote adulterado).
     cooldown:
       default-days: 7
+    ignore:
+      # typescript-eslint só suporta TypeScript < 6.1; subir junto quando ele suportar.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # Os tipos acompanham a versão do Node usada no projeto (.node-version = 24).
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
     groups:
       ferramentas-de-desenvolvimento:
         dependency-type: development
