@@ -3,6 +3,7 @@ import { Dropzone } from '../components/dropzone';
 import { FileList } from '../components/file-list';
 import { Icon } from '../components/icon';
 import { acceptAttribute, describeKinds } from '../tools/accept-file';
+import { processorFor } from '../tools/processors';
 import type { ToolDefinition } from '../tools/registry';
 import { MAX_QUEUE_SIZE, useFileQueue } from '../tools/use-file-queue';
 
@@ -49,7 +50,9 @@ export function ToolPage({ tool }: { tool: ToolDefinition }) {
         label={tool.dropLabel}
         acceptsText={describeKinds(tool.accepts)}
         accept={acceptAttribute(tool.accepts)}
-        onFiles={queue.add}
+        onFiles={(files) => {
+          queue.add(files, processorFor(tool.id, option));
+        }}
       />
 
       {queue.overflow > 0 && (
@@ -61,7 +64,7 @@ export function ToolPage({ tool }: { tool: ToolDefinition }) {
         </p>
       )}
 
-      <FileList items={queue.items} onRemove={queue.remove} />
+      <FileList items={queue.items} onRemove={queue.remove} onPassword={queue.submitPassword} />
     </section>
   );
 }
