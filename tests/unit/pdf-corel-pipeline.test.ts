@@ -181,7 +181,9 @@ describe('troca de degradês', () => {
     expect(content).not.toContain('/P1 scn');
     // Texto e imagem embutida intactos (o leitor não confundiu "sh" dentro deles).
     expect(content).toContain('(texto \\(com par');
-    expect(content).toContain('BI /W 2 /H 2 /CS /G /BPC 8 ID');
+    // Imagem embutida (BI…EI) virou imagem normal: o Corel recusa imagens embutidas.
+    expect(content).not.toContain(' BI ');
+    expect(content).toMatch(/\/IIm\d+ Do/);
     // Nenhum operador sh sobrou, nem nas páginas nem no Form.
     expect(content).not.toMatch(/\/Sh\d+ sh\b/);
     const form = out.doc.keys().find((key) => out.doc.dict(key)?.['/Subtype'] === '/Form');
