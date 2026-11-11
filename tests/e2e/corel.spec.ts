@@ -72,13 +72,15 @@ test('PDF com senha de abertura: pede a senha, recusa a errada e aceita a certa'
   expect(bytes.toString('latin1')).not.toContain('/Encrypt');
 });
 
-test('degradês: troca por cor sólida e avisa os que foram mantidos', async ({ page }) => {
+test('degradês: todos viram cor sólida e o PDF sai sem nenhum "sh"', async ({ page }) => {
   await dropSamples(page, 'Básica + degradês', 'degrades.pdf');
   const row = page.getByTestId('file-row');
-  await expect(row).toContainText('7 degradês trocados por cor sólida', { timeout: 30_000 });
-  await expect(row).toContainText('degradê tipo 1 não suportado');
-  await expect(row).toContainText('sem recorte foi mantido');
+  await expect(row).toContainText('10 degradês trocados por cor sólida', { timeout: 30_000 });
+  await expect(row).toContainText('cor aproximada (degradê de malha, tipo 4)');
+  await expect(row).not.toContainText('mantido');
   await expect(row).not.toContainText('conferência visual encontrou diferença');
+  const { bytes } = await download(page, row);
+  expect(bytes.toString('latin1')).not.toContain('/ShadingType');
 });
 
 test('arquivo com extensão .pdf que não é PDF é recusado antes de processar', async ({ page }) => {
