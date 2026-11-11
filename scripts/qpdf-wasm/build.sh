@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Compila o qpdf oficial para WebAssembly (ES module para Web Worker).
+# Compila o qpdf oficial para WebAssembly (ES module para Web Worker; também roda
+# no Node, para os testes automáticos executarem a mesma correção que o app).
 #
 # Roda DENTRO da imagem fixa do Emscripten (ver .github/workflows/qpdf-wasm.yml).
 # Saída em vendor/qpdf/:
@@ -46,7 +47,7 @@ LINK_FLAGS=(
   -sMODULARIZE=1
   -sEXPORT_ES6=1
   -sEXPORT_NAME=createQpdf
-  -sENVIRONMENT=worker
+  -sENVIRONMENT=worker,node
   -sINVOKE_RUN=0
   -sEXIT_RUNTIME=0
   -sFORCE_FILESYSTEM=1
