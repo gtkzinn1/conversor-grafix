@@ -57,8 +57,6 @@ describe('public/_headers do projeto', () => {
 
   it('connect-src só libera o próprio site e o Hugging Face', () => {
     const connect = /connect-src ([^;]+)/.exec(csp)?.[1]?.split(/\s+/) ?? [];
-    expect(connect.sort()).toEqual(
-      ["'self'", 'https://*.hf.co', 'https://*.huggingface.co', 'https://huggingface.co'].sort(),
-    );
+    expect(connect.sort()).toEqual(["'self'", 'https://*.hf.co', 'https://huggingface.co'].sort());
   });
 });

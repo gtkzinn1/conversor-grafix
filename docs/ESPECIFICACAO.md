@@ -106,7 +106,8 @@ Correção básica **mais** a troca dos degradês que o Corel não importa por c
 - Recorte **normal** (cortesia para clientes). Prioridade: **qualidade**; o tempo não importa.
 - **Motor: BiRefNet** (licença MIT, `ZhengPeng7/BiRefNet`). Existem versões ONNX prontas na organização `onnx-community` do Hugging Face (ex.: `BiRefNet-ONNX`, `BiRefNet_lite-ONNX`). Testar as variantes e escolher a de **maior qualidade que rode de forma estável** nos 3 computadores; registrar a escolha e o motivo.
 - **Não usar RMBG-2.0** (licença só não comercial) nem modelos sem licença clara.
-- Execução: **ONNX Runtime Web** com **WebGPU**; se não houver WebGPU, _fallback_ para WASM (lento, aceitável). Rodar em **Web Worker**.
+- **Escolha (Etapa 3):** padrão **`BiRefNet_512x512` fp32 no processador (WASM)**, 897 MB. Os modelos de 1024 px não cabem nos 4 GB de memória do WASM (`bad_alloc`), e o WebGPU travou a placa AMD GCN-4 de um dos computadores (TDR do Windows). Os modelos de 1024 px na placa de vídeo (BiRefNet e BiRefNet lite, fp16 ou fp32) ficam como opção em “Sobre”.
+- Execução: **ONNX Runtime Web** 1.31.1 (build JSPI) em **Web Worker**; WASM por padrão, WebGPU opcional. Se a placa cair durante um recorte (dispositivo perdido, worker encerrado ou tempo esgotado), o app volta sozinho para o processador e lembra isso naquele computador; dá para religar em “Sobre”.
 - Modelo carregado do Hugging Face (é maior que o limite de 25 MiB por arquivo do Cloudflare Pages), com as regras de segurança da seção 6.4.
 - Processamento:
   - Inferência na resolução do modelo; **máscara redimensionada para a resolução original**.
@@ -178,7 +179,7 @@ Em vigor desde a Etapa 1 (ver o arquivo). Aplicados também no `vite preview` po
 
 ```
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' https://huggingface.co https://*.hf.co; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()
@@ -196,7 +197,7 @@ Em vigor desde a Etapa 1 (ver o arquivo). Aplicados também no `vite preview` po
 Notas:
 
 - `COOP` + `COEP` habilitam _cross-origin isolation_ (`crossOriginIsolated === true`, conferido nos testes), necessária para WASM com múltiplas threads (ONNX Runtime). Verificar na Etapa 3 que o download do modelo continua funcionando com `credentialless`; se não, ajustar e documentar.
-- Os domínios exatos do Hugging Face em `connect-src` devem ser confirmados na Etapa 3 (os arquivos grandes podem ser servidos por domínios de CDN diferentes); liberar **somente** o necessário.
+- `connect-src` (Etapa 3): `https://huggingface.co` (endereço do modelo) e `https://*.hf.co` (o Hugging Face redireciona os arquivos grandes para a CDN, ex.: `us.aws.cdn.hf.co`, que muda por região). `*.huggingface.co` foi retirado. O download funciona com `credentialless` (sem cookies: `credentials: 'omit'`).
 - Sem `unsafe-inline` e sem `unsafe-eval`. Fontes, ícones e estilos ficam **dentro do projeto**.
 
 ---
@@ -480,6 +481,12 @@ Atualizar a cada decisão técnica relevante.
 | 2026-11-11 | Na opção de degradês, nenhum degradê fica no arquivo: todos viram cor sólida                                | Teste no Corel 27: só importou a variante sem nenhum `sh`; o usuário prefere cor sólida a arriscar o erro. Amostras do original ficam numa página extra (ver abaixo)                                                                                                     |
 | 2026-11-11 | Imagens embutidas (BI…EI) viram imagens normais                                                             | Rodada 7: o Corel 27 recusou todas as variantes com imagem embutida; sem ela, importou                                                                                                                                                                                   |
 | 2026-11-11 | Degradês originais numa página de amostras no fim, em recorte + `sh`                                        | Rodada 8: recorte + `sh` importou como degradê editável; o mesmo degradê como padrão (`scn`) foi recusado                                                                                                                                                                |
+| 2026-11-11 | ONNX Runtime Web 1.31.1, build JSPI, com os arquivos servidos pelo próprio app                              | O `.wasm` JSPI (17,9 MB) cabe no limite de 25 MiB por arquivo do Cloudflare Pages; sem CDN. A CSP atual basta (o `new Function` do embind não é chamado)                                                                                                                 |
+| 2026-11-11 | Modelo padrão: BiRefNet_512x512 fp32 no processador (WASM)                                                  | Teste nos computadores: 1024 px no WASM estoura os 4 GB (`bad_alloc`); no WebGPU da placa AMD GCN-4 um `GatherND` leva ~13 s e o Windows reinicia a placa (TDR). O 512 roda em qualquer computador (~7 s com 4 threads). Os modelos de placa ficam como opção            |
+| 2026-11-11 | Divisão de nós `Split`/`Concat` do grafo antes de rodar no WebGPU                                           | O BiRefNet tem nós com mais buffers que o `maxStorageBuffersPerShaderStage` de placas comuns (16); a divisão mantém o resultado e é testada com o ONNX Runtime no Node                                                                                                   |
+| 2026-11-11 | Falha da placa de vídeo desliga o WebGPU naquele computador                                                 | Dispositivo perdido, worker encerrado ou tempo esgotado com modelo de placa: grava a preferência e volta ao processador. O usuário pode religar em “Sobre”                                                                                                               |
+| 2026-11-11 | `connect-src` só com `huggingface.co` e `*.hf.co`                                                           | Hosts vistos no download real (redirecionamento para `*.cdn.hf.co`); `*.huggingface.co` não é usado                                                                                                                                                                      |
+| 2026-11-11 | Modelo guardado no OPFS (sistema de arquivos privado do site), não na Cache API                             | No teste real, o Chrome recusou `cache.put` acima de algumas centenas de MB (“Unexpected internal error”); o OPFS gravou e leu 940 MB. O SHA-256 é conferido no download e a cada carga                                                                                  |
 
 ---
 

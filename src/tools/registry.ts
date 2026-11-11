@@ -56,7 +56,7 @@ export const TOOLS: readonly ToolDefinition[] = [
     icon: 'scissors',
     accepts: ['png', 'jpeg', 'webp'],
     dropLabel: 'Solte as imagens aqui',
-    availableInStage: 3,
+    availableInStage: null,
   },
   {
     id: 'converter-imagens',

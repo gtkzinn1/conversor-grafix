@@ -15,6 +15,9 @@ export const test = base.extend<{ guard: { externalRequests: string[] } }>({
       const origin = new URL(baseURL ?? 'http://localhost').origin;
 
       page.on('console', (message) => {
+        // Aviso do próprio Chrome quando não há placa de vídeo (CI no Linux): o WebGPU é só
+        // uma opção do "Remover fundo", e o app segue no processador.
+        if (message.text() === 'No available adapters.') return;
         if (message.type() === 'error' || message.type() === 'warning') {
           consoleProblems.push(`[${message.type()}] ${message.text()}`);
         }

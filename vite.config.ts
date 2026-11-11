@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import packageJson from './package.json' with { type: 'json' };
@@ -10,6 +11,19 @@ const THEME_COLOR = '#141418';
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
+  },
+  resolve: {
+    alias: [
+      // ONNX Runtime com o .wasm e a "cola" JS como arquivos separados (servidos pelo app, ver
+      // src/workers/remove-bg.worker.ts). A versão "bundle" criaria as threads a partir do
+      // próprio worker do app.
+      {
+        find: /^onnxruntime-web\/jspi$/,
+        replacement: fileURLToPath(
+          new URL('./node_modules/onnxruntime-web/dist/ort.jspi.min.mjs', import.meta.url),
+        ),
+      },
+    ],
   },
   // Nada de sourcemaps em produção: o app é privado e não precisa expor o código-fonte.
   build: {

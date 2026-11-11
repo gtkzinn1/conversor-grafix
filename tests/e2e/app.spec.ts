@@ -137,7 +137,7 @@ test.describe('área de soltar e lista de arquivos', () => {
   });
 
   test('cada ferramenta aceita seus próprios tipos', async ({ page }) => {
-    await page.goto('/#/remover-fundo');
+    await page.goto('/#/converter-imagens');
     await page
       .getByTestId('file-input')
       .setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
@@ -171,7 +171,7 @@ test.describe('área de soltar e lista de arquivos', () => {
   });
 
   test('nome de arquivo com HTML não vira HTML', async ({ page }) => {
-    await page.goto('/#/remover-fundo');
+    await page.goto('/#/converter-imagens');
     const name = '<img src=x onerror=alert(1)>.png';
     await page
       .getByTestId('file-input')
