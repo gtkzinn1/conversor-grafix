@@ -23,16 +23,23 @@ Na Grafix chegam todo dia arquivos de clientes que o CorelDRAW recusa ou importa
 
 ## Ferramentas
 
-| Ferramenta                                                                                                                             | Situação            |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| **Corrigir PDF para o CorelDRAW 27**: reescreve em PDF 1.4, remove conteúdo ativo e troca degradês que o Corel descarta por cor sólida | Planejada (Etapa 2) |
-| **Remover fundo de imagem** com IA (BiRefNet, local, WebGPU/WASM) e editor de ajuste                                                   | Planejada (Etapa 3) |
-| **PSD → PDF** mantendo DPI e modo de cor (inclusive CMYK)                                                                              | Planejada (Etapa 4) |
-| **Editar PDF**: juntar, separar, extrair, girar, cortar por área, comprimir, PDF → imagem                                              | Planejada (Etapa 5) |
-| **Imagens**: converter, redimensionar, imagens → PDF                                                                                   | Planejada (Etapa 6) |
-| **CMYK** com perfil ISO Coated v2 (FOGRA39)                                                                                            | Planejada (Etapa 7) |
+| Ferramenta                                                                                                                                                                               | Situação             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **Corrigir PDF para o CorelDRAW 27**: resolve o "arquivo danificado" dos PDFs do Canva, reescreve em PDF 1.4, remove conteúdo ativo e troca degradês que o Corel descarta por cor sólida | **Pronta** (Etapa 2) |
+| **Remover fundo de imagem** com IA (BiRefNet, local, WebGPU/WASM) e editor de ajuste                                                                                                     | Planejada (Etapa 3)  |
+| **PSD → PDF** mantendo DPI e modo de cor (inclusive CMYK)                                                                                                                                | Planejada (Etapa 4)  |
+| **Editar PDF**: juntar, separar, extrair, girar, cortar por área, comprimir, PDF → imagem                                                                                                | Planejada (Etapa 5)  |
+| **Imagens**: converter, redimensionar, imagens → PDF                                                                                                                                     | Planejada (Etapa 6)  |
+| **CMYK** com perfil ISO Coated v2 (FOGRA39)                                                                                                                                              | Planejada (Etapa 7)  |
 
-**Etapa atual: 1 (fundação).** Estrutura do projeto, PWA offline, cabeçalhos de segurança, infraestrutura de workers, interface (menu lateral, área de soltar arquivos, temas escuro e claro), testes e CI. As ferramentas já aparecem no app e conferem os arquivos recebidos; o processamento chega nas próximas etapas.
+**Etapa atual: 2 (Corrigir PDF para o Corel).** A Etapa 1 entregou a fundação: PWA offline, cabeçalhos de segurança, workers, interface e CI. As outras ferramentas já aparecem no app e conferem os arquivos recebidos; o processamento delas chega nas próximas etapas.
+
+### Como funciona a correção para o Corel
+
+1. O **qpdf** (compilado para WebAssembly) lê o PDF, repara a estrutura e remove proteções.
+2. A estrutura vira JSON; o app remove a **árvore de acessibilidade do Canva** (a causa do "arquivo danificado"), o conteúdo ativo e, se pedido, troca degradês por cor sólida, lendo o conteúdo das páginas com um leitor próprio (sem regex).
+3. O qpdf grava em **PDF 1.4** com tabela xref clássica.
+4. Antes de liberar o download, o app confere o arquivo com o qpdf e **compara a aparência** do original e do corrigido com o PDF.js.
 
 ## Arquitetura
 
@@ -61,7 +68,8 @@ Detalhes, requisitos e decisões: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.m
 ├─ .github/            CI (GitHub Actions) e Dependabot
 ├─ docs/               especificação e registro de decisões
 ├─ public/             _headers (segurança), ícones do PWA
-├─ scripts/            geração de ícones/logos, cabeçalhos no preview
+├─ scripts/            ícones, cabeçalhos no preview, compilação do qpdf, PDFs de teste
+├─ vendor/qpdf/        qpdf compilado para WebAssembly (hashes em BUILD-INFO)
 ├─ src/
 │  ├─ assets/          logos e símbolos
 │  ├─ components/      menu lateral, área de soltar, lista de arquivos

@@ -33,6 +33,10 @@ jobs:
       - name: Instalar dependências (versões exatas do package-lock)
         run: npm ci
 
+      - name: Conferir o qpdf WebAssembly versionado (SHA-256 do BUILD-INFO)
+        working-directory: vendor/qpdf
+        run: grep -E '^[0-9a-f]{64}  qpdf\.(js|wasm)$' BUILD-INFO | sha256sum -c -
+
       - name: Auditoria de dependências
         run: npm audit --audit-level=high
 

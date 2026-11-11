@@ -17,6 +17,7 @@ export const ICON_PATHS = {
   moon: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z',
   upload: 'M12 15V4M7 9l5-5 5 5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3',
   x: 'M6 6l12 12M18 6 6 18',
+  download: 'M12 4v11M7 10l5 5 5-5M5 19h14',
   check: 'M5 12l5 5L20 7',
   alert: 'M12 3 2 20h20zM12 10v4M12 17h.01',
   lock: 'M7 11V8a5 5 0 0 1 10 0v3M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z',

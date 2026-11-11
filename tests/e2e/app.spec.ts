@@ -121,7 +121,7 @@ test.describe('casca do app', () => {
 
 test.describe('área de soltar e lista de arquivos', () => {
   test('confere o tipo pelo conteúdo e explica a recusa', async ({ page }) => {
-    await page.goto('/#/corrigir-pdf');
+    await page.goto('/#/editar-pdf');
     await page.getByTestId('file-input').setInputFiles([
       { name: 'arte.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n%fake\n') },
       { name: 'foto.pdf', mimeType: 'application/pdf', buffer: PNG },
@@ -145,7 +145,7 @@ test.describe('área de soltar e lista de arquivos', () => {
   });
 
   test('arrastar e soltar adiciona o arquivo', async ({ page }) => {
-    await page.goto('/#/corrigir-pdf');
+    await page.goto('/#/editar-pdf');
     const transfer = await page.evaluateHandle(() => {
       const data = new DataTransfer();
       data.items.add(new File(['%PDF-1.7\n'], 'solto.pdf', { type: 'application/pdf' }));
@@ -160,7 +160,7 @@ test.describe('área de soltar e lista de arquivos', () => {
   });
 
   test('remover tira o arquivo da lista', async ({ page }) => {
-    await page.goto('/#/corrigir-pdf');
+    await page.goto('/#/editar-pdf');
     await page.getByTestId('file-input').setInputFiles({
       name: 'a.pdf',
       mimeType: 'application/pdf',
