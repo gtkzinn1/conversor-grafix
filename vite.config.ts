@@ -1,12 +1,16 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import packageJson from './package.json' with { type: 'json' };
 import { cloudflareHeaders } from './scripts/vite-plugin-headers.ts';
 
 const APP_NAME = 'Conversor Grafix';
 const THEME_COLOR = '#141418';
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version),
+  },
   // Nada de sourcemaps em produção: o app é privado e não precisa expor o código-fonte.
   build: {
     target: 'es2023',
