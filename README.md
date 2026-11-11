@@ -5,7 +5,7 @@
 <h1 align="center">Conversor</h1>
 
 <p align="center">
-  Ferramentas de PDF, imagem e PSD para a rotina de uma gráfica,<br />
+  Ferramentas de PDF e imagem para a rotina de uma gráfica,<br />
   rodando <strong>100% no navegador</strong>: nenhum arquivo sai do computador.
 </p>
 
@@ -19,15 +19,14 @@
 
 ## Por que existe
 
-Na Grafix chegam todo dia arquivos de clientes que o CorelDRAW recusa ou importa faltando partes, PSDs que só abrem no Photoshop e imagens que precisam de recorte. O **Conversor** reúne essas correções num app instalável, que funciona offline e trata cada arquivo como potencialmente hostil.
+Na Grafix chegam todo dia arquivos de clientes que o CorelDRAW recusa ou importa faltando partes e imagens que precisam de recorte. O **Conversor** reúne essas correções num app instalável, que funciona offline e trata cada arquivo como potencialmente hostil.
 
 ## Ferramentas
 
 | Ferramenta                                                                                                                                                                               | Situação             |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | **Corrigir PDF para o CorelDRAW 27**: resolve o "arquivo danificado" dos PDFs do Canva, reescreve em PDF 1.4, remove conteúdo ativo e troca degradês que o Corel descarta por cor sólida | **Pronta** (Etapa 2) |
-| **Remover fundo de imagem** com IA (BiRefNet, local, WebGPU/WASM) e editor de ajuste                                                                                                     | Planejada (Etapa 3)  |
-| **PSD → PDF** mantendo DPI e modo de cor (inclusive CMYK)                                                                                                                                | Planejada (Etapa 4)  |
+| **Remover fundo de imagem** com IA (BiRefNet, local, WebGPU/WASM) e editor de ajuste                                                                                                     | **Pronta** (Etapa 3) |
 | **Editar PDF**: juntar, separar, extrair, girar, cortar por área, comprimir, PDF → imagem                                                                                                | Planejada (Etapa 5)  |
 | **Imagens**: converter, redimensionar, imagens → PDF                                                                                                                                     | Planejada (Etapa 6)  |
 | **CMYK** com perfil ISO Coated v2 (FOGRA39)                                                                                                                                              | Planejada (Etapa 7)  |

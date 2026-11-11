@@ -2,7 +2,7 @@
   "name": "conversor-grafix",
   "version": "0.1.0",
   "private": true,
-  "description": "Conversor da Grafix: ferramentas de PDF, imagem e PSD que rodam 100% no navegador.",
+  "description": "Conversor da Grafix: ferramentas de PDF e imagem que rodam 100% no navegador.",
   "type": "module",
   "engines": {
     "node": ">=24"
