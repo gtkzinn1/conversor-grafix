@@ -1,0 +1,76 @@
+/*
+ * Casca PROVISÓRIA da Etapa 1: só o necessário para testar a infraestrutura
+ * (tema, aviso de atualização, leitura de arquivo em worker). Será substituída
+ * pelo layout aprovado pelo usuário.
+ */
+
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.shell__logo {
+  width: 200px;
+  height: auto;
+}
+
+.shell__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.shell__muted {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.button {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.error {
+  color: var(--danger);
+  margin: 0;
+}
+
+.error details {
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+  white-space: pre-wrap;
+  font-size: 0.85em;
+}

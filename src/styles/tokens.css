@@ -1,0 +1,51 @@
+/*
+ * Tokens de cor e tipografia. Cores da marca vêm do logo da Grafix.
+ * Tema escuro é o padrão (data-theme="dark" no <html>).
+ */
+
+:root {
+  --brand-cyan: #00b9f2;
+  --brand-magenta: #ec008c;
+  --brand-yellow: #fff200;
+  --brand-black: #000000;
+
+  --font-sans: 'Exo 2 Variable', 'Segoe UI', system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+}
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #141418;
+  --surface: #1c1c22;
+  --surface-raised: #24242c;
+  --border: #33333d;
+  --text: #ececf1;
+  --text-muted: #a3a4ab;
+  --accent: var(--brand-cyan);
+  --accent-text: #001a24;
+  --danger: #ff6b8b;
+  --focus-ring: var(--brand-cyan);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f6f6f8;
+  --surface: #ffffff;
+  --surface-raised: #eeeef2;
+  --border: #d6d6de;
+  --text: #1c1c1f;
+  --text-muted: #5a5b63;
+  /* Ciano mais escuro no tema claro para manter contraste do texto sobre fundo branco. */
+  --accent: #0077a3;
+  --accent-text: #ffffff;
+  --danger: #b0003a;
+  --focus-ring: #0077a3;
+}
