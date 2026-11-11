@@ -31,6 +31,9 @@ export function differingFraction(
 export const VISUAL_LIMITS = {
   /** Correção básica: o desenho não deve mudar nada. */
   basic: 0.005,
-  /** Correção de degradês: só as áreas de degradê mudam; acima disso é suspeito. */
-  shadings: 0.6,
+  /**
+   * Correção de degradês: fundos inteiros em degradê viram cor sólida (diferença grande e esperada);
+   * só uma página quase toda diferente (ex.: em branco) indica problema.
+   */
+  shadings: 0.95,
 } as const;

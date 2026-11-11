@@ -145,12 +145,13 @@ describe('correção básica', () => {
 });
 
 describe('troca de degradês', () => {
-  it('troca os degradês com recorte por cor sólida e mantém os não suportados', () => {
+  it('troca TODOS os degradês por cor sólida; nenhum sobra no arquivo', () => {
     const { pdf, report } = fix('degrades.pdf', { fixShadings: true });
-    // Sh1, Sh2 (W*), Sh3, Sh4 (Separation), Sh5 (amostrada), padrão P1 e o Form = 7.
-    expect(report.shadingsReplaced).toBe(7);
-    expect(report.warnings.join('\n')).toMatch(/degradê tipo 1 não suportado/);
-    expect(report.warnings.join('\n')).toMatch(/sem recorte/);
+    // Sh1–Sh8, padrão P1 e o Form = 10.
+    expect(report.shadingsReplaced).toBe(10);
+    expect(report.warnings).toEqual([
+      'Um degradê virou uma cor aproximada (degradê de malha, tipo 4); confira a cor no Corel.',
+    ]);
 
     const out = inspect(pdf);
     const [content = ''] = out.pageContents();
@@ -168,15 +169,28 @@ describe('troca de degradês', () => {
     expect(content).toMatch(/0 0\.5 0\.4 0\.05 k\n200 500 100 100 re\nf/);
     // Sh5: função amostrada (vermelho → azul) = média roxa.
     expect(content).toMatch(/0\.5 0 0\.5 rg\n350 500 100 100 re\nf/);
-    // Mantidos: tipo 1 e o sem recorte.
-    expect(content).toContain('/Sh6 sh');
-    expect(content).toContain('/Sh7 sh');
+    // Sh6 (tipo 1, baseado em função): média da grade 2D = cinza 50%.
+    expect(content).toContain('q 0.5 g\n350 650 100 100 re\nf Q');
+    // Sh7 sem recorte, dentro de "0.5 0 0 0.5 cm": vira a página inteira no espaço atual.
+    expect(content).toContain(
+      'q 0.5 0 0 0.5 0 0 cm q 1 0.5 0 rg 0 0 m 1190 0 l 1190 1684 l 0 1684 l h f Q Q',
+    );
+    // Sh8 (malha): usa a cor de fundo declarada.
+    expect(content).toContain('q 0 0 1 rg\n50 200 50 50 re\nf Q');
     // Padrão de degradê via scn virou cor.
     expect(content).not.toContain('/P1 scn');
     // Texto e imagem embutida intactos (o leitor não confundiu "sh" dentro deles).
     expect(content).toContain('(texto \\(com par');
     expect(content).toContain('BI /W 2 /H 2 /CS /G /BPC 8 ID');
-    expect(content.match(/\/Sh\d sh\b/g)).toEqual(['/Sh6 sh', '/Sh7 sh']);
+    // Nenhum operador sh sobrou, nem nas páginas nem no Form.
+    expect(content).not.toMatch(/\/Sh\d+ sh\b/);
+    const form = out.doc.keys().find((key) => out.doc.dict(key)?.['/Subtype'] === '/Form');
+    expect(out.text(form ?? '')).toContain('rg\n0 0 80 80 re\nf');
+    // Definições de degradê sem uso foram retiradas dos recursos da página.
+    const resources = out.doc.dict(listPages(out.doc)[0]?.key ?? '')?.['/Resources'];
+    const resourcesDict = out.doc.resolve(resources);
+    expect(resourcesDict).not.toHaveProperty('/Shading');
+    expect(resourcesDict).not.toHaveProperty('/Pattern');
     expect(out.check.code).toBe(0);
   });
 
