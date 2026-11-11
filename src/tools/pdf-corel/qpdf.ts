@@ -1,4 +1,4 @@
-import createQpdf, { type QpdfModule } from '../../vendor/qpdf/qpdf.js';
+import createQpdf, { type QpdfModule } from '../../../vendor/qpdf/qpdf.js';
 
 /** Resultado de uma execução do qpdf. Códigos: 0 = ok, 2 = erro, 3 = ok com avisos. */
 export interface QpdfRun {
@@ -16,7 +16,7 @@ export interface Qpdf {
 }
 
 /**
- * Carrega uma instância do qpdf (WebAssembly) dentro do worker atual.
+ * Carrega uma instância do qpdf (WebAssembly). Roda num Web Worker (app) ou no Node (testes).
  * Os arquivos ficam num sistema de arquivos em memória, que some quando o worker é encerrado.
  */
 export async function loadQpdf(): Promise<Qpdf> {
