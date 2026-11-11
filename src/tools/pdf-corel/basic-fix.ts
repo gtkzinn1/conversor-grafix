@@ -107,11 +107,12 @@ export function applyBasicFix(doc: PdfJsonDocument): BasicFixReport {
   const mediaAnnotationRefs = new Set<string>();
   for (const key of doc.keys()) {
     const dict = doc.dict(key);
-    if (dict === undefined || !needsCleaning(doc, dict)) continue;
+    if (dict === undefined) continue;
     const subtype = dict['/Subtype'];
     if (typeof subtype === 'string' && MEDIA_ANNOTATIONS.has(subtype) && '/Rect' in dict) {
       mediaAnnotationRefs.add(key.slice('obj:'.length));
     }
+    if (!needsCleaning(doc, dict)) continue;
     doc.edit(key, (target) => {
       cleanDict(doc, target, report);
     });
