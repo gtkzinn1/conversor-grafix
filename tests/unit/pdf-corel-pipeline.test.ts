@@ -4,7 +4,7 @@ import type { ErrorCode } from '../../src/lib/shared/errors';
 import { listPages } from '../../src/tools/pdf-corel/pages';
 import { fixPdfForCorel, type PipelineOptions } from '../../src/tools/pdf-corel/pipeline';
 import { loadQpdf, type Qpdf } from '../../src/tools/pdf-corel/qpdf';
-import { isQpdfJson, isStream, PdfJsonDocument } from '../../src/tools/pdf-corel/qpdf-json';
+import { isDict, isQpdfJson, isStream, PdfJsonDocument } from '../../src/tools/pdf-corel/qpdf-json';
 
 /**
  * Integração: roda a correção completa com o MESMO qpdf WebAssembly do app,
@@ -194,6 +194,28 @@ describe('troca de degradês', () => {
     expect(resourcesDict).not.toHaveProperty('/Shading');
     expect(resourcesDict).not.toHaveProperty('/Pattern');
     expect(out.check.code).toBe(0);
+  });
+
+  it('acrescenta uma página no fim com os degradês originais, em recorte + sh', () => {
+    const { pdf, report } = fix('degrades.pdf', { fixShadings: true });
+    expect(report.pages).toBe(1);
+    expect(report.swatchPages).toBe(1);
+    expect(report.swatches).toBeGreaterThan(0);
+    const out = inspect(pdf);
+    const pages = listPages(out.doc);
+    expect(pages).toHaveLength(2);
+    // Mesmo tamanho da primeira página.
+    expect(pages[1]?.mediaBox).toEqual([0, 0, ...(pages[0]?.mediaBox.slice(2) ?? [])]);
+    const [, swatchPage = ''] = out.pageContents();
+    // Formato que o Corel 27 importa como degradê editável: recorte + sh, sem /Pattern.
+    expect(swatchPage).toMatch(/q [\d. ]+ re W n \/Sw1 sh Q/);
+    expect(swatchPage).not.toContain('scn');
+    expect(swatchPage).toContain('(Degrad\\352 1 \\(p\\341g. 1\\))');
+    const resources = out.doc.resolve(out.doc.dict(pages[1]?.key ?? '')?.['/Resources']);
+    const shadings = out.doc.resolve(isDict(resources) ? resources['/Shading'] : undefined);
+    expect(Object.keys(isDict(shadings) ? shadings : {})).toHaveLength(report.swatches);
+    // A página original continua sem nenhum sh.
+    expect(out.pageContents()[0]).not.toMatch(/\/\w+ sh\b/);
   });
 
   it('sem a opção, os degradês ficam como estão', () => {

@@ -135,12 +135,16 @@ export function fixPdfForCorel(
 
   let shadingsReplaced = 0;
   let warnings: readonly string[] = [];
+  let swatchPages = 0;
+  let swatches = 0;
   if (options.fixShadings) {
     progress(0.5, 'Trocando degradês por cor sólida');
     const streams = exportStreams(qpdf, NORMALIZED, streamsNeededForShadings(doc));
     const shadings = applyShadingFix(doc, streams);
     shadingsReplaced = shadings.replaced;
     warnings = shadings.warnings;
+    swatchPages = shadings.swatchPages;
+    swatches = shadings.swatches;
   }
 
   progress(0.7, 'Gravando o PDF corrigido');
@@ -160,7 +164,11 @@ export function fixPdfForCorel(
     throw new AppError('validation-failed', undefined, check.stderr || check.stdout);
   const result = exportStructure(qpdf, OUT, 'validation-failed');
   const pagesAfter = listPages(result);
-  if (!samePageGeometry(pagesBefore, pagesAfter)) {
+  // As páginas de amostras de degradê ficam no fim; as originais não podem mudar.
+  if (
+    pagesAfter.length !== pagesBefore.length + swatchPages ||
+    !samePageGeometry(pagesBefore, pagesAfter.slice(0, pagesBefore.length))
+  ) {
     throw new AppError('validation-failed', undefined, 'Número ou tamanho das páginas mudou.');
   }
   if (result.header.pdfversion !== '1.4') {
@@ -182,10 +190,12 @@ export function fixPdfForCorel(
   return {
     pdf,
     report: {
-      pages: pagesAfter.length,
+      pages: pagesBefore.length,
       originalVersion: doc.header.pdfversion,
       wasEncrypted,
       shadingsReplaced,
+      swatchPages,
+      swatches,
       warnings,
       ...fix,
     },
