@@ -96,7 +96,7 @@ Correção básica **mais** a troca dos degradês que o Corel não importa por c
 - Tratar também degradês usados como **padrão de preenchimento** (`/Pattern` com `PatternType 2`, via `scn`/`SCN`).
 - Espaços de cor: DeviceCMYK, DeviceRGB, DeviceGray; para `ICCBased`, `Separation`, `DeviceN` e `Indexed`, usar o espaço alternativo e documentar a aproximação.
 - Funções: suportar `FunctionType 0` (amostrada), `2`, `3` e `4` (PostScript calculadora, com limite de passos para evitar loop infinito). Se não suportar, **manter o degradê original** e avisar, nunca gerar arquivo quebrado.
-- `sh` **sem** recorte imediatamente antes: não substituir automaticamente; manter e registrar aviso.
+- **Todo degradê vira cor sólida** (decisão do usuário em 2026-11-11, após teste no Corel): `sh` sem recorte logo antes vira o preenchimento da área inteira (página ou Form, desfazendo a CTM) com a cor média, isolado em `q…Q`; tipo 1 usa média numa grade 2D; malhas (tipos 4–7) e espaços de cor sem conversão usam `/Background` ou cinza 50%, com aviso de cor aproximada. As definições de degradê que ficam sem uso são retiradas dos recursos.
 - Validar a saída (seção 9.3) antes de liberar o download.
 
 ### 2.2 Remover fundo de imagem — prioridade 2
@@ -368,7 +368,7 @@ Gerados por `scripts/samples/generate_samples.py` (sintéticos, sem dados de cli
 
 - Abre sem erro no verificador do qpdf (`--check`).
 - Mesmo número de páginas e mesmas dimensões.
-- **Comparação visual**: renderizar original e corrigido com pdf.js (360 px de largura, até 50 páginas) e comparar pixels; diferença acima do limite gera aviso. Limites em `src/tools/pdf-corel/pixel-diff.ts`: 0,5% dos pixels na correção básica; 60% na de degradês (onde a diferença nas áreas de degradê é esperada). Se a renderização falhar, o arquivo é liberado com aviso, pois já passou nas conferências do qpdf.
+- **Comparação visual**: renderizar original e corrigido com pdf.js (360 px de largura, até 50 páginas) e comparar pixels; diferença acima do limite gera aviso. Limites em `src/tools/pdf-corel/pixel-diff.ts`: 0,5% dos pixels na correção básica; 95% na de degradês (fundos inteiros em degradê viram cor sólida, então a diferença pode ser grande; só uma página quase toda diferente indica problema). Se a renderização falhar, o arquivo é liberado com aviso, pois já passou nas conferências do qpdf.
 - Versão do PDF e ausência de JavaScript/ações conferidas.
 
 ### 9.4 Testes manuais (com o usuário)
@@ -475,6 +475,7 @@ Atualizar a cada decisão técnica relevante.
 | 2026-11-11 | Troca de degradês preserva o estado gráfico                                                                 | Se o `sh` fecha o bloco (`Q` em seguida), usa a técnica validada (cor + caminho + `f`); se há desenho depois, preenche isolado (`q … Q`) e mantém o recorte, para não mudar o que vem depois                                                                             |
 | 2026-11-11 | pdf.js 6.4.299 em worker aninhado, para a conferência visual                                                | Carregado no mesmo worker, o pdf.js se registra no canal de mensagens do app; isolado, não interfere. Sem `eval` (a opção `isEvalSupported` deixou de existir na versão 6)                                                                                               |
 | 2026-11-11 | Limite de 4096 caracteres por token no leitor de conteúdo                                                   | Evita estouro de pilha com arquivos hostis                                                                                                                                                                                                                               |
+| 2026-11-11 | Na opção de degradês, nenhum degradê fica no arquivo: todos viram cor sólida                                | Teste no Corel 27: só importou a variante sem nenhum `sh`; o usuário prefere cor sólida a arriscar o erro. Amostra do degradê original para copiar: em avaliação (rodada 6)                                                                                              |
 
 ---
 
