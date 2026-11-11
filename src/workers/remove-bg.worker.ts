@@ -61,7 +61,12 @@ async function inferMask(model: Uint8Array, pixels: ImageData, size: number, bac
       throw new AppError('unexpected', undefined, 'Modelo sem entrada ou saída.');
     }
     const input = new ort.Tensor('float32', toInputTensor(pixels.data, size), [1, 3, size, size]);
-    const results = await session.run({ [inputName]: input });
+    const running = session.run({ [inputName]: input });
+    // Se o Windows reiniciar a placa (TDR), o dispositivo é perdido e o `run` pode nunca terminar.
+    const results =
+      backend === 'webgpu'
+        ? await Promise.race([running, deviceLost(await ort.env.webgpu.device)])
+        : await running;
     const output = results[outputName];
     if (output?.type !== 'float32' || output.data.length !== size * size) {
       throw new AppError('unexpected', undefined, 'Saída do modelo em formato inesperado.');
@@ -69,6 +74,30 @@ async function inferMask(model: Uint8Array, pixels: ImageData, size: number, bac
     return output.data as Float32Array;
   } finally {
     await session.release();
+  }
+}
+
+function deviceLost(device: GPUDevice): Promise<never> {
+  return device.lost.then((info) => {
+    throw new AppError('gpu-failed', undefined, `Dispositivo WebGPU perdido: ${info.message}`);
+  });
+}
+
+/** Com WebGPU, qualquer falha do motor vira `gpu-failed`: a página passa a usar o processador. */
+async function inferOnBackend(
+  model: ArrayBuffer,
+  pixels: ImageData,
+  size: number,
+  backend: string,
+) {
+  try {
+    return await inferMask(await prepareModel(model, backend), pixels, size, backend);
+  } catch (caught) {
+    if (backend !== 'webgpu' || (caught instanceof AppError && caught.code === 'gpu-failed')) {
+      throw caught;
+    }
+    const detail = caught instanceof Error ? caught.message : String(caught);
+    throw new AppError('gpu-failed', undefined, detail);
   }
 }
 
@@ -96,9 +125,9 @@ defineWorkerTask<RemoveBgInput, RemoveBgOutput>(isRemoveBgInput, async (input, c
     small.close();
 
     context.progress(null, 'Carregando o modelo de IA');
-    const modelData = await prepareModel(await loadCachedModel(model), model.backend);
+    const modelData = await loadCachedModel(model);
     context.progress(null, 'Recortando');
-    const logits = await inferMask(modelData, smallPixels, size, model.backend);
+    const logits = await inferOnBackend(modelData, smallPixels, size, model.backend);
 
     context.progress(null, 'Ajustando a borda');
     const mask = upscaleMask(logitsToMask(logits), size, width, height);

@@ -248,10 +248,17 @@ export function BgEditor({ original, result, fileName, onClose, onSave }: BgEdit
     y: (screenY - view.current.y) / view.current.zoom,
   });
 
-  const local = (event: PointerEvent) => {
-    const rect = (event.currentTarget as HTMLCanvasElement).getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-  };
+  /**
+   * Posição do ponteiro no canvas. Os eventos agrupados (`getCoalescedEvents`) não têm
+   * `currentTarget`, por isso o retângulo vem do evento original.
+   */
+  const local = (event: PointerEvent, rect = canvasRect(event)) => ({
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  });
+
+  const canvasRect = (event: PointerEvent) =>
+    (event.currentTarget as HTMLCanvasElement).getBoundingClientRect();
 
   const onPointerDown = (event: PointerEvent) => {
     if (!engine || drag.current) return;
@@ -278,7 +285,8 @@ export function BgEditor({ original, result, fileName, onClose, onSave }: BgEdit
   };
 
   const onPointerMove = (event: PointerEvent) => {
-    const at = local(event);
+    const rect = canvasRect(event);
+    const at = local(event, rect);
     pointer.current = at;
     const current = drag.current;
     if (current?.mode === 'pan') {
@@ -287,8 +295,9 @@ export function BgEditor({ original, result, fileName, onClose, onSave }: BgEdit
       current.x = at.x;
       current.y = at.y;
     } else if (current?.mode === 'paint' && engine) {
-      for (const sample of event.getCoalescedEvents?.() ?? [event]) {
-        const point = local(sample);
+      const coalesced = event.getCoalescedEvents();
+      for (const sample of coalesced.length > 0 ? coalesced : [event]) {
+        const point = local(sample, rect);
         const image = toImage(point.x, point.y);
         engine.extendStroke(image.x, image.y);
       }

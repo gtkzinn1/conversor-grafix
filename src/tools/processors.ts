@@ -3,7 +3,9 @@ import type { PdfCorelReport } from '../lib/shared/tasks/pdf-corel';
 import type { TaskProgress } from '../lib/run-worker-task';
 import { AppError } from '../lib/shared/errors';
 import { DEFAULT_LIMITS } from '../lib/shared/limits';
+import { markGpuFailed } from '../lib/storage';
 import { fixPdfForCorel, removeBackground } from '../lib/tasks';
+import { findModel } from './remove-bg/models';
 
 /** Resultado pronto para baixar. */
 export interface ProcessResult {
@@ -75,6 +77,17 @@ function runSerially<T>(signal: AbortSignal, task: () => Promise<T>): Promise<T>
   return run;
 }
 
+/**
+ * Falhas que, com o modelo na placa de vídeo, indicam a placa (e não o arquivo): o motor
+ * avisou que o dispositivo caiu, o worker morreu ou travou até o limite de tempo.
+ */
+function isGpuFailure(caught: unknown): boolean {
+  return (
+    caught instanceof AppError &&
+    (caught.code === 'gpu-failed' || caught.code === 'worker-crashed' || caught.code === 'timeout')
+  );
+}
+
 /** "Remover fundo": `modelId` é o modelo de IA escolhido para este computador. */
 function backgroundRemover(modelId: string): Processor {
   return (file, { signal, onProgress }) => {
@@ -83,7 +96,10 @@ function backgroundRemover(modelId: string): Processor {
       const result = await removeBackground(
         { file, modelId, maxMegapixels: DEFAULT_LIMITS.maxMegapixels },
         { signal, onProgress },
-      );
+      ).catch((caught: unknown) => {
+        if (findModel(modelId)?.backend === 'webgpu' && isGpuFailure(caught)) markGpuFailed();
+        throw caught;
+      });
       return {
         blob: result.png,
         fileName: deriveOutputName(file.name, { suffix: ' (sem fundo)', extension: 'png' }),

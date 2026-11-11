@@ -48,16 +48,22 @@ function ModelCard({ ai }: { ai: AiModel }) {
         Face. É feito uma vez por computador; depois funciona sem internet. Suas imagens não saem do
         computador.
       </p>
-      {ai.device?.webGpu === false && (
+      {ai.gpuDisabled && (
         <p class="model-card__text">
-          Este computador não oferece aceleração pela placa de vídeo (WebGPU) no navegador. O
-          recorte roda no processador: mais devagar e com um pouco menos de detalhe na borda.
+          A placa de vídeo deste computador parou de responder num recorte anterior. Por isso o
+          recorte roda no processador. Dá para voltar a usar a placa em “Sobre”.
         </p>
       )}
       {state.error && (
-        <p class="file-row__error" role="alert">
+        <div class="file-row__error" role="alert">
           {state.error.message}
-        </p>
+          {state.error.detail !== undefined && (
+            <details class="file-row__detail">
+              <summary>Detalhes técnicos</summary>
+              {state.error.detail}
+            </details>
+          )}
+        </div>
       )}
       <div class="model-card__actions">
         <button type="button" class="button button--primary" onClick={ai.download}>
