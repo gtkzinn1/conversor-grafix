@@ -72,15 +72,21 @@ test('PDF com senha de abertura: pede a senha, recusa a errada e aceita a certa'
   expect(bytes.toString('latin1')).not.toContain('/Encrypt');
 });
 
-test('degradês: todos viram cor sólida e o PDF sai sem nenhum "sh"', async ({ page }) => {
+test('degradês: viram cor sólida e os originais vão para a página de amostras', async ({
+  page,
+}) => {
   await dropSamples(page, 'Básica + degradês', 'degrades.pdf');
   const row = page.getByTestId('file-row');
   await expect(row).toContainText('10 degradês trocados por cor sólida', { timeout: 30_000 });
   await expect(row).toContainText('cor aproximada (degradê de malha, tipo 4)');
   await expect(row).not.toContainText('mantido');
   await expect(row).not.toContainText('conferência visual encontrou diferença');
+  await expect(row).toContainText('degradês originais numa página extra no fim');
   const { bytes } = await download(page, row);
-  expect(bytes.toString('latin1')).not.toContain('/ShadingType');
+  const text = bytes.toString('latin1');
+  // Degradês só na página de amostras, e nunca como padrão (o Corel recusa /Pattern scn).
+  expect(text).not.toContain('/PatternType');
+  expect(text).toMatch(/\/Sw1 <</);
 });
 
 test('arquivo com extensão .pdf que não é PDF é recusado antes de processar', async ({ page }) => {

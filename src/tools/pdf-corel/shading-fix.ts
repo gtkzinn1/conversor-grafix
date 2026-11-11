@@ -7,6 +7,7 @@ import {
   type PdfSource,
 } from './functions';
 import { listPages } from './pages';
+import { addSwatchPages, type Swatch } from './swatch-page';
 import {
   isDict,
   isRef,
@@ -25,12 +26,17 @@ import {
  * Qualquer outro "sh" vira o preenchimento da área inteira com a cor média, isolado em q…Q:
  * o sh pinta tudo dentro do recorte atual, então o efeito na tela é o mesmo.
  * Degradês sem cor calculável (malhas, espaços de cor exóticos) viram uma cor aproximada.
- * Nenhum degradê fica no arquivo (decisão do usuário, 2026-11-11).
+ * Nas páginas originais nenhum degradê fica (decisão do usuário, 2026-11-11). Os degradês
+ * lineares e radiais originais vão para páginas de amostras no fim do arquivo, no formato
+ * "recorte + sh", que o Corel 27 importa como degradê editável (rodada 8).
  */
 
 export interface ShadingFixResult {
   readonly replaced: number;
   readonly warnings: readonly string[];
+  /** Páginas de amostras acrescentadas no fim e quantos degradês elas mostram. */
+  readonly swatchPages: number;
+  readonly swatches: number;
 }
 
 /** Caminho: operadores de construção (m l c v y re h). */
@@ -250,6 +256,11 @@ function solidColorFor(shading: PdfValue | undefined, context: RewriteContext): 
     warn(context, 'Um degradê sem definição virou cinza; confira a cor no Corel.');
     return FALLBACK_COLOR;
   }
+  const type = context.doc.resolve(dict['/ShadingType']);
+  if (type === 2 || type === 3) {
+    const id = isRef(shading) ? shading : JSON.stringify(dict);
+    if (!context.swatches.has(id)) context.swatches.set(id, { shading: dict, page: context.page });
+  }
   try {
     return averageShadingColor(dict, context.doc, context.source);
   } catch (error) {
@@ -386,7 +397,11 @@ interface RewriteContext {
   /** Área do conteúdo no espaço inicial do stream: MediaBox da página ou BBox do Form. */
   readonly area: readonly [number, number, number, number];
   readonly warnings: Map<string, number>;
-  readonly forms: { key: string; resources: PdfValue | undefined }[];
+  readonly forms: { key: string; resources: PdfValue | undefined; page: number }[];
+  /** Página (1, 2, …) onde o conteúdo aparece, para identificar as amostras. */
+  readonly page: number;
+  /** Degradês originais encontrados, sem repetir (chave = referência ou o próprio dicionário). */
+  readonly swatches: Map<string, Swatch>;
 }
 
 const warn = (context: RewriteContext, message: string) => {
@@ -440,7 +455,11 @@ export function rewriteContent(
       if (!isName(name)) continue;
       const xobject = resource(context.doc, context.resources, '/XObject', name.value);
       if (isRef(xobject) && context.doc.dict(keyOf(xobject))?.['/Subtype'] === '/Form') {
-        context.forms.push({ key: keyOf(xobject), resources: context.resources });
+        context.forms.push({
+          key: keyOf(xobject),
+          resources: context.resources,
+          page: context.page,
+        });
       }
     } else if (op === 'sh') {
       const result = replaceShading(instructions, i, context, text, ctm);
@@ -623,7 +642,8 @@ export function applyShadingFix(
     streamData: (value) => (isRef(value) ? streams.get(keyOf(value)) : undefined),
   };
   const warnings = new Map<string, number>();
-  const forms: { key: string; resources: PdfValue | undefined }[] = [];
+  const forms: RewriteContext['forms'] = [];
+  const swatches = new Map<string, Swatch>();
   const visitedForms = new Set<string>();
   // Páginas podem compartilhar o mesmo conteúdo: cada conjunto de streams é reescrito uma vez.
   const visitedContents = new Set<string>();
@@ -637,7 +657,8 @@ export function applyShadingFix(
   let replaced = 0;
   const usage: ResourceUsage = new Map();
 
-  for (const page of listPages(doc)) {
+  const pages = listPages(doc);
+  for (const [pageIndex, page] of pages.entries()) {
     const pageDict = doc.dict(page.key);
     if (!pageDict) continue;
     const contents = pageDict['/Contents'];
@@ -660,6 +681,8 @@ export function applyShadingFix(
       area: [x0, y0, x1, y1],
       warnings,
       forms,
+      page: pageIndex + 1,
+      swatches,
     };
     const result = rewriteContent(joined, context);
     recordUsage(usage, resources.owner, resources.value, result.usedNames);
@@ -699,6 +722,8 @@ export function applyShadingFix(
       area: [bx0, by0, bx1, by1],
       warnings,
       forms,
+      page: form.page,
+      swatches,
     });
     if (ownResources !== undefined) recordUsage(usage, form.key, ownResources, result.usedNames);
     if (result.data) {
@@ -708,11 +733,13 @@ export function applyShadingFix(
   }
 
   pruneUnusedShadings(doc, usage);
+  const [px0 = 0, py0 = 0, px1 = 595, py1 = 842] = pages[0]?.mediaBox ?? [];
+  const swatchPages = addSwatchPages(doc, [...swatches.values()], [px1 - px0, py1 - py0]);
 
   const messages = [...warnings].map(([message, count]) =>
     count > 1 ? `${message} (${count}×)` : message,
   );
-  return { replaced, warnings: messages };
+  return { replaced, warnings: messages, swatchPages, swatches: swatches.size };
 }
 
 function joinWithNewline(chunks: readonly Uint8Array[]): Uint8Array {

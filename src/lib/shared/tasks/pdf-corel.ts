@@ -20,6 +20,9 @@ export interface PdfCorelReport {
   readonly wasEncrypted: boolean;
   /** Degradês trocados por cor sólida (0 na correção básica). */
   readonly shadingsReplaced: number;
+  /** Páginas acrescentadas no fim com os degradês originais, e quantos degradês elas mostram. */
+  readonly swatchPages: number;
+  readonly swatches: number;
   /** Avisos para mostrar ao usuário (ex.: degradê mantido por não ser suportado). */
   readonly warnings: readonly string[];
 }
@@ -58,6 +61,8 @@ export function isPdfCorelOutput(value: unknown): value is PdfCorelOutput {
     typeof r['mediaAnnotationsRemoved'] === 'number' &&
     typeof r['wasEncrypted'] === 'boolean' &&
     typeof r['shadingsReplaced'] === 'number' &&
+    typeof r['swatchPages'] === 'number' &&
+    typeof r['swatches'] === 'number' &&
     Array.isArray(r['warnings']) &&
     r['warnings'].every((warning) => typeof warning === 'string')
   );

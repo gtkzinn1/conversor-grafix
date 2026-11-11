@@ -140,6 +140,18 @@ export class PdfJsonDocument {
     this.changed.set(key, { stream: { dict: nextDict, data: dataBase64 } });
   }
 
+  /** Cria um objeto novo (número livre, geração 0); devolve a referência ("N 0 R"). */
+  add(entry: ObjectEntry): string {
+    let max = 0;
+    for (const key of [...Object.keys(this.original), ...this.changed.keys()]) {
+      const id = /^obj:(\d+) /.exec(key)?.[1];
+      if (id !== undefined) max = Math.max(max, Number(id));
+    }
+    const ref = `${max + 1} 0 R`;
+    this.changed.set(keyOf(ref), structuredClone(entry));
+    return ref;
+  }
+
   get changeCount(): number {
     return this.changed.size;
   }

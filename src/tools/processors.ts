@@ -37,6 +37,17 @@ export function summarizeCorelReport(report: PdfCorelReport): string[] {
         : `${report.shadingsReplaced} degradês trocados por cor sólida`,
     );
   }
+  if (report.swatchPages > 0) {
+    const where =
+      report.swatchPages === 1
+        ? 'numa página extra no fim'
+        : `em ${String(report.swatchPages)} páginas extras no fim`;
+    lines.push(
+      report.swatches === 1
+        ? `degradê original ${where}`
+        : `${String(report.swatches)} degradês originais ${where}`,
+    );
+  }
   const active =
     (report.javascriptRemoved ? 1 : 0) +
     report.automaticActionsRemoved +
