@@ -9,6 +9,14 @@ import {
   type InspectFileInput,
   type InspectFileOutput,
 } from './shared/tasks/inspect-file';
+import {
+  isModelDownloadOutput,
+  isRemoveBgOutput,
+  type ModelDownloadInput,
+  type ModelDownloadOutput,
+  type RemoveBgInput,
+  type RemoveBgOutput,
+} from './shared/tasks/remove-bg';
 
 /**
  * Pontos de entrada das tarefas pesadas. Cada função cria seu próprio worker.
@@ -29,6 +37,38 @@ export function inspectFile(file: Blob, options: TaskOptions = {}): Promise<Insp
       }),
     { file },
     { ...options, timeoutMs: 30_000, validateOutput: isInspectFileOutput },
+  );
+}
+
+export function downloadAiModel(
+  input: ModelDownloadInput,
+  options: TaskOptions = {},
+): Promise<ModelDownloadOutput> {
+  return runWorkerTask<ModelDownloadInput, ModelDownloadOutput>(
+    () =>
+      new Worker(new URL('../workers/model-download.worker.ts', import.meta.url), {
+        type: 'module',
+        name: 'model-download',
+      }),
+    input,
+    // Conexões lentas: até 1 hora para quase 1 GB.
+    { ...options, timeoutMs: 60 * 60_000, validateOutput: isModelDownloadOutput },
+  );
+}
+
+export function removeBackground(
+  input: RemoveBgInput,
+  options: TaskOptions = {},
+): Promise<RemoveBgOutput> {
+  return runWorkerTask<RemoveBgInput, RemoveBgOutput>(
+    () =>
+      new Worker(new URL('../workers/remove-bg.worker.ts', import.meta.url), {
+        type: 'module',
+        name: 'remove-bg',
+      }),
+    input,
+    // Sem placa de vídeo, imagens grandes podem levar alguns minutos.
+    { ...options, timeoutMs: 15 * 60_000, validateOutput: isRemoveBgOutput },
   );
 }
 

@@ -16,6 +16,9 @@ export type ErrorCode =
   | 'wrong-password'
   | 'invalid-pdf'
   | 'validation-failed'
+  | 'model-download'
+  | 'model-integrity'
+  | 'model-missing'
   | 'unexpected';
 
 const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
@@ -33,6 +36,11 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   'invalid-pdf': 'Não foi possível ler este PDF. Ele pode estar corrompido.',
   'validation-failed':
     'O PDF corrigido não passou na conferência final, por isso não foi liberado. O original não foi alterado.',
+  'model-download':
+    'Não foi possível baixar o modelo de IA. Confira a conexão com a internet e tente de novo.',
+  'model-integrity':
+    'O modelo de IA baixado não confere com o esperado e foi descartado. Tente baixar de novo.',
+  'model-missing': 'O modelo de IA ainda não foi baixado neste computador.',
   unexpected: 'Ocorreu um erro inesperado.',
 };
 
