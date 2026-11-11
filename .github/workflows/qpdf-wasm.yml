@@ -1,0 +1,39 @@
+name: qpdf WASM
+
+# Compila o qpdf para WebAssembly de forma reproduzível, na imagem fixa do Emscripten.
+# Roda quando o script de compilação muda. O resultado é baixado como artefato,
+# conferido e versionado em vendor/qpdf/ (com o SHA-256 em BUILD-INFO).
+on:
+  push:
+    paths:
+      - scripts/qpdf-wasm/**
+      - .github/workflows/qpdf-wasm.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compilar qpdf (Emscripten)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      # emscripten/emsdk:6.0.13 (linux/amd64), fixada por digest.
+      image: emscripten/emsdk:6.0.13@sha256:badbe38bedc8f4ff88a5a24672a2d59606015ba9a3bbe69801ad2fbdf75ab500
+    env:
+      EMSDK_IMAGE: emscripten/emsdk:6.0.13@sha256:badbe38bedc8f4ff88a5a24672a2d59606015ba9a3bbe69801ad2fbdf75ab500
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compilar
+        run: bash scripts/qpdf-wasm/build.sh
+
+      - name: Publicar resultado
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: qpdf-wasm
+          path: vendor/qpdf/
+          retention-days: 30
