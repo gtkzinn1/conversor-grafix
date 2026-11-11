@@ -5,6 +5,9 @@ const COMPONENTS = [
   { name: 'Preact', license: 'MIT', use: 'Interface' },
   { name: 'Workbox', license: 'MIT', use: 'Funcionamento offline e atualizações' },
   { name: 'Exo 2', license: 'SIL Open Font License 1.1', use: 'Fonte' },
+  { name: 'qpdf', license: 'Apache 2.0', use: 'Leitura e gravação de PDF' },
+  { name: 'PDF.js', license: 'Apache 2.0', use: 'Conferência visual de PDF' },
+  { name: 'zlib e libjpeg (IJG)', license: 'zlib e IJG', use: 'Compressão e imagens JPEG' },
 ] as const;
 
 export function AboutPage() {
