@@ -12,6 +12,14 @@ O modelo de segurança completo está em [`docs/ESPECIFICACAO.md`](docs/ESPECIFI
 - **Dados de arquivos nunca viram HTML.** Nomes e metadados são exibidos como texto (JSX escapa automaticamente). O lint proíbe `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval`, `new Function` e `dangerouslySetInnerHTML`.
 - **Nomes de arquivo de saída são sanitizados** (caracteres proibidos no Windows, caracteres de controle, controles de direção de texto que disfarçam extensões, nomes reservados como `CON`).
 
+## PDFs de clientes (Corrigir PDF para o Corel)
+
+- Todo PDF é aberto num worker próprio, encerrado ao final; o qpdf roda em WebAssembly (sandbox do navegador), num sistema de arquivos em memória.
+- O PDF corrigido sai **sem conteúdo ativo**: JavaScript, ações automáticas (`/OpenAction`, `/AA`), ações que executam ou abrem arquivos (`/Launch`, `/SubmitForm`, `/GoToR`…), anexos e anotações de mídia.
+- Senha de abertura: o app pede ao usuário; nunca tenta adivinhar. Proteção contra edição (sem senha de abertura) é removida.
+- O leitor de conteúdo de página tem limites de tamanho de token, aninhamento e número de instruções; a calculadora PostScript das funções de degradê tem limite de passos e de pilha. Sintaxe inválida mantém o conteúdo original, com aviso.
+- A conferência visual usa o PDF.js num worker aninhado, sem fontes do sistema, sem busca na rede e sem scripts.
+
 ## Cabeçalhos HTTP
 
 Definidos em [`public/_headers`](public/_headers) (Cloudflare Pages) e aplicados também no `vite preview`, de modo que os testes ponta a ponta rodem com as regras de produção.
@@ -24,7 +32,8 @@ Os testes ponta a ponta reprovam qualquer erro de console, violação de CSP ou 
 
 ## Cadeia de suprimentos
 
-- Poucas dependências em tempo de execução (3, sem dependências indiretas).
+- Poucas dependências em tempo de execução: Preact, workbox-window, a fonte Exo 2 e o PDF.js (sem dependências indiretas no app).
+- **qpdf compilado por nós** (`scripts/qpdf-wasm/build.sh`, workflow `qpdf-wasm`): fonte oficial conferida pelo SHA-256 publicado no arquivo assinado do release, imagem do Emscripten fixada por digest, saída sem `eval`. O CI confere o SHA-256 de `vendor/qpdf/qpdf.js` e `qpdf.wasm` contra `BUILD-INFO`.
 - Versões **exatas** (`save-exact`), `package-lock.json` versionado e `npm ci` no CI.
 - Política de adoção: só versões estáveis publicadas há pelo menos **14 dias**; o Dependabot espera 7 dias (`cooldown`) antes de sugerir atualização.
 - **Scripts de instalação desativados** (`ignore-scripts=true` em `.npmrc`).
