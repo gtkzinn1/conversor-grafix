@@ -113,6 +113,10 @@ export function fixPdfForCorel(
     ...password,
     '--decrypt',
     '--object-streams=disable',
+    // Imagens embutidas no conteúdo (BI…EI) fazem o CorelDRAW 27 recusar o arquivo
+    // (teste da rodada 7, 2026-11-11): viram imagens normais, sem mudar a aparência.
+    '--externalize-inline-images',
+    '--ii-min-bytes=0',
     IN,
     NORMALIZED,
   ]);
