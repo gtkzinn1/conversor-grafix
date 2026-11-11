@@ -31,6 +31,12 @@
   --text-muted: #a3a4ab;
   --accent: var(--brand-cyan);
   --accent-text: #001a24;
+  /* Fundo suave e texto para itens ativos (menu, opção escolhida). */
+  --accent-soft: rgb(0 185 242 / 12%);
+  --accent-ink: #7fdcff;
+  --border-strong: #464653;
+  --warning: #ffe14d;
+  --success: #5fd39a;
   --danger: #ff6b8b;
   --focus-ring: var(--brand-cyan);
 }
@@ -46,6 +52,11 @@
   /* Ciano mais escuro no tema claro para manter contraste do texto sobre fundo branco. */
   --accent: #0077a3;
   --accent-text: #ffffff;
+  --accent-soft: rgb(0 119 163 / 10%);
+  --accent-ink: #005f82;
+  --border-strong: #b9b9c4;
+  --warning: #7a5d00;
+  --success: #1d7a4c;
   --danger: #b0003a;
   --focus-ring: #0077a3;
 }

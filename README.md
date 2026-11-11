@@ -28,11 +28,11 @@ Na Grafix chegam todo dia arquivos de clientes que o CorelDRAW recusa ou importa
 | **Corrigir PDF para o CorelDRAW 27**: reescreve em PDF 1.4, remove conteúdo ativo e troca degradês que o Corel descarta por cor sólida | Planejada (Etapa 2) |
 | **Remover fundo de imagem** com IA (BiRefNet, local, WebGPU/WASM) e editor de ajuste                                                   | Planejada (Etapa 3) |
 | **PSD → PDF** mantendo DPI e modo de cor (inclusive CMYK)                                                                              | Planejada (Etapa 4) |
-| **PDF**: juntar, separar, extrair, girar, comprimir, PDF → imagem                                                                      | Planejada (Etapa 5) |
+| **Editar PDF**: juntar, separar, extrair, girar, cortar por área, comprimir, PDF → imagem                                              | Planejada (Etapa 5) |
 | **Imagens**: converter, redimensionar, imagens → PDF                                                                                   | Planejada (Etapa 6) |
 | **CMYK** com perfil ISO Coated v2 (FOGRA39)                                                                                            | Planejada (Etapa 7) |
 
-**Etapa atual: 1 (fundação).** Estrutura do projeto, PWA offline, cabeçalhos de segurança, infraestrutura de workers, testes e CI.
+**Etapa atual: 1 (fundação).** Estrutura do projeto, PWA offline, cabeçalhos de segurança, infraestrutura de workers, interface (menu lateral, área de soltar arquivos, temas escuro e claro), testes e CI. As ferramentas já aparecem no app e conferem os arquivos recebidos; o processamento chega nas próximas etapas.
 
 ## Arquitetura
 
@@ -63,11 +63,13 @@ Detalhes, requisitos e decisões: [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.m
 ├─ public/             _headers (segurança), ícones do PWA
 ├─ scripts/            geração de ícones/logos, cabeçalhos no preview
 ├─ src/
-│  ├─ assets/          logos
-│  ├─ components/      componentes de interface
+│  ├─ assets/          logos e símbolos
+│  ├─ components/      menu lateral, área de soltar, lista de arquivos
+│  ├─ pages/           tela de ferramenta e tela "Sobre"
 │  ├─ lib/             tema, download, PWA, execução de workers
 │  │  └─ shared/       código que roda na página e nos workers (erros, nomes, tipos, limites)
 │  ├─ styles/          tokens de cor (temas escuro e claro)
+│  ├─ tools/           registro das ferramentas e fila de arquivos
 │  └─ workers/         tarefas pesadas, uma por arquivo
 └─ tests/
    ├─ unit/            Vitest

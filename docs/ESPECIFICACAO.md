@@ -17,7 +17,7 @@ Estas regras valem para **todo** o desenvolvimento, sem exceção.
    - não há erros nem avisos de TypeScript, lint ou console.
 4. **Nada de suposições sobre bibliotecas.** Antes de adotar qualquer dependência: conferir manutenção recente, licença, vulnerabilidades conhecidas, tamanho e se faz o que promete. Registrar a decisão (seção 11).
 5. **Nenhum dado sai do computador.** Nada de analytics, telemetria, fontes ou scripts de CDN em tempo de execução, nem envio de arquivos. A única conexão externa permitida é o download do modelo de IA (seção 6.4).
-6. **Mudanças pequenas e rastreáveis.** Commits pequenos, com mensagem clara, um assunto por commit (padrão _Conventional Commits_). Nada é enviado ao GitHub antes da aprovação do usuário.
+6. **Mudanças pequenas e rastreáveis.** Commits pequenos, com mensagem clara, um assunto por commit (padrão _Conventional Commits_). Cada etapa é feita numa **branch própria** e entra na `main` por **pull request**, com CI verde, só depois da aprovação do usuário.
 7. **Documentar o que for decidido** neste arquivo (atualizar a seção correspondente) quando algo mudar.
 8. **Interface definida junto com o usuário.** Antes de implementar qualquer tela, apresentar mockups (2–3 direções) para escolha. Interface enxuta: só o que tem função clara.
 
@@ -124,8 +124,16 @@ Correção básica **mais** a troca dos degradês que o Corel não importa por c
 
 ### 2.4 Ferramentas extras
 
-PDF: juntar, separar, extrair páginas, girar, comprimir, PDF → imagem (PNG/JPG, DPI escolhido).
-Imagens: converter JPG/PNG/WebP, redimensionar, imagens → PDF.
+PDF: juntar, separar, extrair páginas, girar, **cortar**, comprimir, PDF → imagem (PNG/JPG, DPI escolhido).
+
+**Cortar PDF** (pedido do usuário em 2026-11-11):
+
+- Mostrar a página (renderizada com pdf.js) e deixar o usuário **desenhar a área de corte** com o mouse, com ajuste fino pelas bordas e campos numéricos (mm).
+- Escolher onde aplicar: **só nesta página** ou **em todas as páginas** do documento.
+- O corte redefine as caixas da página (`MediaBox` e `CropBox`, e `TrimBox`/`BleedBox` quando existirem), **sem rasterizar**: vetores, textos e imagens continuam como estão.
+- Limitação a deixar clara na interface: o conteúdo fora da área fica **escondido, não apagado** (continua dentro do arquivo). Apagar de verdade exigiria reescrever o conteúdo da página; fica como possível melhoria.
+- Conferir no CorelDRAW 27 se a importação respeita o corte (teste manual da Etapa 5).
+  Imagens: converter JPG/PNG/WebP, redimensionar, imagens → PDF.
 
 ### 2.5 Cores e CMYK
 
@@ -227,10 +235,11 @@ conversor-grafix/
 │  └─ profiles/                # perfil ICC + licença (Etapa 7)
 ├─ scripts/                    # geração de marca, cabeçalhos no preview; depois: build do qpdf WASM
 ├─ src/
-│  ├─ assets/                  # logos (escuro = original; claro = gerado)
+│  ├─ assets/                  # logos e símbolos oficiais (tema escuro e claro)
 │  ├─ styles/                  # tokens de cor, temas claro/escuro
-│  ├─ components/              # área de soltar, prévia, progresso, editor de pincel
-│  ├─ tools/                   # uma pasta por ferramenta (a partir da Etapa 2)
+│  ├─ components/              # menu lateral, área de soltar, lista de arquivos, ícones
+│  ├─ pages/                   # tela de ferramenta e tela "Sobre"
+│  ├─ tools/                   # registro das ferramentas, fila de arquivos; uma pasta por ferramenta (Etapa 2+)
 │  ├─ workers/                 # um worker por tarefa pesada + runtime comum
 │  ├─ lib/                     # código da página (tema, download, PWA, execução de workers)
 │  │  └─ shared/               # código que roda na página E nos workers (sem DOM)
@@ -271,7 +280,7 @@ conversor-grafix/
 - Todo processamento pesado em **Web Worker**, com **progresso** e **cancelar**. _(Etapa 1: `src/lib/run-worker-task.ts` + `src/workers/runtime.ts`.)_
 - Transferir buffers (`Transferable`) em vez de copiar.
 - Liberar memória entre arquivos; testar com arquivos grandes.
-- Erros sempre tratados e mostrados em português claro, com detalhe técnico recolhível. Nenhum erro silencioso. _(Etapa 1: `src/lib/shared/errors.ts` + `src/components/error-message.tsx`.)_
+- Erros sempre tratados e mostrados em português claro, com detalhe técnico recolhível. Nenhum erro silencioso. _(Etapa 1: `src/lib/shared/errors.ts`; mensagem na linha do arquivo em `src/components/file-list.tsx`.)_
 
 ### 6.4 Modelo de IA (única conexão externa)
 
@@ -293,11 +302,12 @@ conversor-grafix/
 - **Tema escuro padrão**, botão para o claro, escolha salva no navegador (com `try/catch`).
 - **Logo da Grafix** (fornecido pelo usuário): "G" preto com lateral 3D branca e rastros ciano, magenta e amarelo; "GRAFIX DIGITAL" em **branco**; subtítulo "GRÁFICA E COMUNICAÇÃO VISUAL" em ciano.
   - `src/assets/logo-grafix-dark.png`: original, para o tema escuro.
-  - `src/assets/logo-grafix-light.png`: **gerado** por `scripts/generate-brand-assets.py` (texto branco → cinza quase preto; lateral 3D e rastros brancos → cinza médio). **Provisório**: o usuário vai enviar a versão oficial para fundo branco.
+  - `src/assets/logo-grafix-light.png`: versão **oficial** para fundo claro, fornecida pelo usuário.
+  - `src/assets/symbol-grafix-dark.png` e `symbol-grafix-light.png`: só o símbolo ("G" com rastros), oficiais, para fundo escuro e claro. Usados para gerar os ícones do PWA.
 - **Paleta** (do logo): ciano `#00B9F2` (destaque principal), magenta `#EC008C`, amarelo `#FFF200`, preto `#000000`. Definida em `src/styles/tokens.css`, com tons neutros para fundos e textos nos dois temas.
-- Layout: menu lateral com as ferramentas agrupadas (Corel/PDF, Remover fundo, PSD, PDF, Imagens); área grande de arrastar e soltar (vários arquivos); prévia antes/depois; progresso; download. **A definir com o usuário a partir de mockups** (regra 8).
+- Layout **escolhido pelo usuário (direção A, "bancada")**: menu lateral fixo com o nome de cada ferramenta, agrupadas por assunto (Corel, Imagem, PDF); no topo da área principal, título e uma linha explicando o que a ferramenta faz; opções da ferramenta logo abaixo; área grande de arrastar e soltar (vários arquivos); abaixo dela, a lista de arquivos com progresso, cancelar e baixar. Motivo da escolha: "simples, não é complicado e qualquer um consegue entender".
 - Visual com identidade própria, sem cara de site genérico, sem excesso de elementos.
-- Ícone do PWA baseado no "G" (provisório: "G" sobre fundo escuro, gerado pelo mesmo script).
+- Ícone do PWA: símbolo oficial para fundo escuro sobre fundo escuro, gerado por `scripts/generate-brand-assets.py`.
 - Tela "Sobre" com versão do app, licenças de terceiros e o aviso de que nenhum arquivo sai do computador.
 
 ---
@@ -409,7 +419,7 @@ Cada etapa segue o mesmo ciclo: **planejar → implementar → testar → revisa
 
 ### Etapa 5 — Ferramentas de PDF
 
-Juntar, separar, extrair, girar, comprimir, PDF → imagem. **Aceite:** testes automáticos para cada uma; resultado abre no Corel e em leitores comuns.
+Juntar, separar, extrair, girar, cortar (seção 2.4), comprimir, PDF → imagem. **Aceite:** testes automáticos para cada uma; resultado abre no Corel e em leitores comuns.
 
 ### Etapa 6 — Ferramentas de imagem
 
@@ -433,24 +443,28 @@ Integrar lcms2 WASM e o perfil ISO Coated v2 (ECI) nas ferramentas aplicáveis. 
 
 Atualizar a cada decisão técnica relevante.
 
-| Data       | Decisão                                                                                                     | Motivo                                                                                                                                             |
-| ---------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-11-10 | PWA hospedado no Cloudflare Pages                                                                           | Instalação simples, atualização automática, sem alerta de antivírus                                                                                |
-| 2026-11-10 | BiRefNet (MIT) para remover fundo; RMBG-2.0 descartado                                                      | Melhor gratuito com licença livre; RMBG-2.0 é só não comercial                                                                                     |
-| 2026-11-10 | Degradês com recorte + `sh` trocados por cor média                                                          | Causa confirmada do sumiço de desenhos no Corel                                                                                                    |
-| 2026-11-10 | CMYK com ISO Coated v2 (ECI) / FOGRA39                                                                      | Padrão comum no Brasil e perfil de distribuição livre                                                                                              |
-| 2026-11-11 | Política de versões: só versões estáveis com ≥ 14 dias de publicadas; versões exatas; `ignore-scripts=true` | Reduz risco de pacote adulterado recém-publicado e de scripts de instalação maliciosos                                                             |
-| 2026-11-11 | Preact 11 para a interface, com JSX compilado pelo próprio Vite (sem `@preact/preset-vite`)                 | Componentes sem `innerHTML` (texto escapado por padrão); o preset traria Babel e +10 dependências sem necessidade                                  |
-| 2026-11-11 | TypeScript 6.0.3 (e não 7.x)                                                                                | typescript-eslint 8.72 só suporta TypeScript < 6.1                                                                                                 |
-| 2026-11-11 | Três `tsconfig` (app/DOM, workers/WebWorker, ferramentas/Node)                                              | Os tipos de DOM e de Worker conflitam; código comum fica em `src/lib/shared`, sem DOM                                                              |
-| 2026-11-11 | `overrides`: `minimatch` 11.0.8 e `glob` 14.0.4                                                             | Corrigem alertas moderados em ferramentas de build (ESLint, workbox-build); build e testes conferidos                                              |
-| 2026-11-11 | Alerta baixo do `deepmerge` aceito e documentado em SECURITY.md                                             | Só na build, com configuração própria; ainda sem correção publicada. Alternativa (service worker escrito à mão) avaliada e preterida               |
-| 2026-11-11 | Um worker por tarefa, encerrado ao final; mensagens validadas nos dois sentidos                             | Isolamento por arquivo, memória liberada, cancelamento imediato (`terminate`)                                                                      |
-| 2026-11-11 | `_headers` aplicado também no `vite preview`                                                                | Testes ponta a ponta rodam com a CSP real de produção                                                                                              |
-| 2026-11-11 | Testes ponta a ponta no Google Chrome instalado (`channel: 'chrome'`)                                       | É o navegador usado na Grafix; dispensa baixar navegadores do Playwright                                                                           |
-| 2026-11-11 | Fonte Exo 2 embutida (só latim no cache offline)                                                            | Identidade próxima ao logo, sem CDN; provisória até a definição do design                                                                          |
-| 2026-11-11 | Logo claro e ícones gerados por script (provisórios)                                                        | Reprodutível; o usuário enviará a versão oficial do logo para fundo branco                                                                         |
-| 2026-11-11 | `bluetooth=()` removido do `Permissions-Policy`                                                             | O Chrome para Linux não reconhece o recurso e emite aviso no console (reprovava o CI). O app não usa Bluetooth e a CSP já impede scripts injetados |
+| Data       | Decisão                                                                                                     | Motivo                                                                                                                                                                                                   |
+| ---------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-10 | PWA hospedado no Cloudflare Pages                                                                           | Instalação simples, atualização automática, sem alerta de antivírus                                                                                                                                      |
+| 2026-11-10 | BiRefNet (MIT) para remover fundo; RMBG-2.0 descartado                                                      | Melhor gratuito com licença livre; RMBG-2.0 é só não comercial                                                                                                                                           |
+| 2026-11-10 | Degradês com recorte + `sh` trocados por cor média                                                          | Causa confirmada do sumiço de desenhos no Corel                                                                                                                                                          |
+| 2026-11-10 | CMYK com ISO Coated v2 (ECI) / FOGRA39                                                                      | Padrão comum no Brasil e perfil de distribuição livre                                                                                                                                                    |
+| 2026-11-11 | Política de versões: só versões estáveis com ≥ 14 dias de publicadas; versões exatas; `ignore-scripts=true` | Reduz risco de pacote adulterado recém-publicado e de scripts de instalação maliciosos                                                                                                                   |
+| 2026-11-11 | Preact 11 para a interface, com JSX compilado pelo próprio Vite (sem `@preact/preset-vite`)                 | Componentes sem `innerHTML` (texto escapado por padrão); o preset traria Babel e +10 dependências sem necessidade                                                                                        |
+| 2026-11-11 | TypeScript 6.0.3 (e não 7.x)                                                                                | typescript-eslint 8.72 só suporta TypeScript < 6.1                                                                                                                                                       |
+| 2026-11-11 | Três `tsconfig` (app/DOM, workers/WebWorker, ferramentas/Node)                                              | Os tipos de DOM e de Worker conflitam; código comum fica em `src/lib/shared`, sem DOM                                                                                                                    |
+| 2026-11-11 | `overrides`: `minimatch` 11.0.8 e `glob` 14.0.4                                                             | Corrigem alertas moderados em ferramentas de build (ESLint, workbox-build); build e testes conferidos                                                                                                    |
+| 2026-11-11 | Alerta baixo do `deepmerge` aceito e documentado em SECURITY.md                                             | Só na build, com configuração própria; ainda sem correção publicada. Alternativa (service worker escrito à mão) avaliada e preterida                                                                     |
+| 2026-11-11 | Um worker por tarefa, encerrado ao final; mensagens validadas nos dois sentidos                             | Isolamento por arquivo, memória liberada, cancelamento imediato (`terminate`)                                                                                                                            |
+| 2026-11-11 | `_headers` aplicado também no `vite preview`                                                                | Testes ponta a ponta rodam com a CSP real de produção                                                                                                                                                    |
+| 2026-11-11 | Testes ponta a ponta no Google Chrome instalado (`channel: 'chrome'`)                                       | É o navegador usado na Grafix; dispensa baixar navegadores do Playwright                                                                                                                                 |
+| 2026-11-11 | Fonte Exo 2 embutida (só latim no cache offline)                                                            | Identidade próxima ao logo, sem CDN; provisória até a definição do design                                                                                                                                |
+| 2026-11-11 | Logo claro e ícones gerados por script (provisórios)                                                        | Reprodutível; o usuário enviará a versão oficial do logo para fundo branco                                                                                                                               |
+| 2026-11-11 | `bluetooth=()` removido do `Permissions-Policy`                                                             | O Chrome para Linux não reconhece o recurso e emite aviso no console (reprovava o CI). O app não usa Bluetooth e a CSP já impede scripts injetados                                                       |
+| 2026-11-11 | Fluxo de trabalho: uma branch e um PR por etapa                                                             | Testes rodam antes de entrar na `main`; histórico organizado (portfólio). No plano gratuito do GitHub a proteção de branch não é aplicada em repositório privado, então a regra é seguida por disciplina |
+| 2026-11-11 | Layout A ("bancada"): menu lateral com nomes + área de soltar + lista de arquivos                           | Escolhido pelo usuário entre 3 mockups (bancada, marcas de registro, fila)                                                                                                                               |
+| 2026-11-11 | Nova ferramenta: cortar PDF por área, na página atual ou no documento inteiro                               | Pedido do usuário; feito redefinindo as caixas da página, sem rasterizar                                                                                                                                 |
+| 2026-11-11 | Logo claro e símbolos oficiais substituem os gerados                                                        | Fornecidos pelo usuário; o script passa a gerar só os ícones, a partir do símbolo                                                                                                                        |
 
 ---
 
