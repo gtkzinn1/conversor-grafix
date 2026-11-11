@@ -4,8 +4,8 @@ fonte sha256: 8a58af5b6141319287c1883bec8bd1bd545b7567b7fc5e6ce5d25a1c85f36397
 compilador: emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.13 (e13ee988ce3d87a738dd8f3661d02223308c412a)
 imagem: emscripten/emsdk:6.0.13@sha256:badbe38bedc8f4ff88a5a24672a2d59606015ba9a3bbe69801ad2fbdf75ab500
 flags de compilação: -O2 -fwasm-exceptions -ffile-prefix-map=/tmp/qpdf-wasm=/qpdf
-flags de ligação: -fwasm-exceptions -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=createQpdf -sENVIRONMENT=worker -sINVOKE_RUN=0 -sEXIT_RUNTIME=0 -sFORCE_FILESYSTEM=1 -sEXPORTED_RUNTIME_METHODS=['callMain','FS'] -sINCOMING_MODULE_JS_API=['print','printErr','locateFile','wasmBinary'] -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=4GB -sSTACK_SIZE=8MB -sDYNAMIC_EXECUTION=0
+flags de ligação: -fwasm-exceptions -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=createQpdf -sENVIRONMENT=worker,node -sINVOKE_RUN=0 -sEXIT_RUNTIME=0 -sFORCE_FILESYSTEM=1 -sEXPORTED_RUNTIME_METHODS=['callMain','FS'] -sINCOMING_MODULE_JS_API=['print','printErr','locateFile','wasmBinary'] -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=4GB -sSTACK_SIZE=8MB -sDYNAMIC_EXECUTION=0
 
 sha256 dos arquivos:
-0df5bb8c0584b17c3da86080a6f8e34d5a972216f2aa2e2b68d7d4610ee237ff  qpdf.js
+e8a5d6361faa5cca4de86372e3ae1669569ca9efa9ef8bf30285846146ca7caf  qpdf.js
 65f1e423ca921737dffbd675ce807367ed2abe6e8cc258349ce40c7b5ad257a4  qpdf.wasm
