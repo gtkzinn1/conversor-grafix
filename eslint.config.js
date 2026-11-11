@@ -34,7 +34,7 @@ const securityRules = {
 
 export default tseslint.config(
   {
-    ignores: ['dist/', 'dev-dist/', 'coverage/', 'playwright-report/', 'test-results/'],
+    ignores: ['dist/', 'dev-dist/', 'coverage/', 'playwright-report/', 'test-results/', 'vendor/'],
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
