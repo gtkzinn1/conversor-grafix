@@ -12,6 +12,10 @@ export type ErrorCode =
   | 'file-too-large'
   | 'too-many-megapixels'
   | 'too-many-pages'
+  | 'password-required'
+  | 'wrong-password'
+  | 'invalid-pdf'
+  | 'validation-failed'
   | 'unexpected';
 
 const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
@@ -24,6 +28,11 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   'file-too-large': 'O arquivo é maior que o limite permitido.',
   'too-many-megapixels': 'A imagem tem resolução maior que o limite permitido.',
   'too-many-pages': 'O PDF tem mais páginas que o limite permitido.',
+  'password-required': 'Este PDF tem senha de abertura. Digite a senha para continuar.',
+  'wrong-password': 'A senha não confere. Confira e tente de novo.',
+  'invalid-pdf': 'Não foi possível ler este PDF. Ele pode estar corrompido.',
+  'validation-failed':
+    'O PDF corrigido não passou na conferência final, por isso não foi liberado. O original não foi alterado.',
   unexpected: 'Ocorreu um erro inesperado.',
 };
 
