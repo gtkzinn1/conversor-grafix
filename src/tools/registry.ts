@@ -45,7 +45,7 @@ export const TOOLS: readonly ToolDefinition[] = [
       { id: 'degrades', label: 'Básica + degradês' },
     ],
     dropLabel: 'Solte os PDFs aqui',
-    availableInStage: 2,
+    availableInStage: null,
   },
   {
     id: 'remover-fundo',

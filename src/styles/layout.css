@@ -295,8 +295,51 @@
   font-size: 0.875rem;
 }
 
-.file-row__meta--error {
+.file-row__error {
   color: var(--danger);
+}
+
+.file-row__warning {
+  display: block;
+  color: var(--warning);
+}
+
+.file-row__progress {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: 6px;
+  margin-top: var(--space-1);
+  accent-color: var(--accent);
+}
+
+.file-row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.file-row--done .file-row__icon {
+  color: var(--success);
+}
+
+.file-row--needs-password .file-row__icon {
+  color: var(--warning);
+}
+
+.password-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.password-form input {
+  font: inherit;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .file-row__detail {
@@ -337,6 +380,12 @@
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--surface-raised);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .button--primary {
