@@ -1,5 +1,10 @@
 import { runWorkerTask, type TaskProgress } from './run-worker-task';
 import {
+  isPdfCorelOutput,
+  type PdfCorelInput,
+  type PdfCorelOutput,
+} from './shared/tasks/pdf-corel';
+import {
   isInspectFileOutput,
   type InspectFileInput,
   type InspectFileOutput,
@@ -24,5 +29,21 @@ export function inspectFile(file: Blob, options: TaskOptions = {}): Promise<Insp
       }),
     { file },
     { ...options, timeoutMs: 30_000, validateOutput: isInspectFileOutput },
+  );
+}
+
+export function fixPdfForCorel(
+  input: PdfCorelInput,
+  options: TaskOptions = {},
+): Promise<PdfCorelOutput> {
+  return runWorkerTask<PdfCorelInput, PdfCorelOutput>(
+    () =>
+      new Worker(new URL('../workers/pdf-corel.worker.ts', import.meta.url), {
+        type: 'module',
+        name: 'pdf-corel',
+      }),
+    input,
+    // PDFs grandes com muitas imagens podem levar alguns minutos.
+    { ...options, timeoutMs: 10 * 60_000, validateOutput: isPdfCorelOutput },
   );
 }
