@@ -9,6 +9,8 @@ interface FileListProps {
   readonly items: readonly QueueItem[];
   readonly onRemove: (id: string) => void;
   readonly onPassword: (id: string, password: string) => void;
+  /** Quando presente, itens prontos ganham o botão "Ajustar". */
+  readonly onEdit?: (id: string) => void;
 }
 
 const STATUS_ICON: Record<QueueItem['status'], IconName> = {
@@ -120,7 +122,7 @@ function Status({
   }
 }
 
-export function FileList({ items, onRemove, onPassword }: FileListProps) {
+export function FileList({ items, onRemove, onPassword, onEdit }: FileListProps) {
   if (items.length === 0) return null;
   return (
     <ul class="file-list" aria-label="Arquivos">
@@ -136,6 +138,18 @@ export function FileList({ items, onRemove, onPassword }: FileListProps) {
             <Status item={item} onPassword={onPassword} />
           </span>
           <span class="file-row__actions">
+            {item.status === 'done' && onEdit && (
+              <button
+                type="button"
+                class="button"
+                onClick={() => {
+                  onEdit(item.id);
+                }}
+              >
+                <Icon name="edit" size={18} />
+                Ajustar
+              </button>
+            )}
             {item.status === 'done' && (
               <button
                 type="button"
