@@ -125,6 +125,12 @@ def degrades() -> None:
                                                 Range=[0, 1])),
         Sh7=Dictionary(ShadingType=2, ColorSpace=Name.DeviceRGB, Coords=[0, 0, 595, 0],
                        Function=exp_function([1, 1, 0], [1, 0, 0])),
+        # Malha de triângulos (tipo 4): sem média calculável, usa o /Background.
+        Sh8=pdf.make_stream(
+            bytes([0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 255, 0, 0, 128, 255, 0, 0, 255]),
+            ShadingType=4, ColorSpace=Name.DeviceRGB, BitsPerCoordinate=8, BitsPerComponent=8,
+            BitsPerFlag=8, Decode=[0, 100, 0, 100, 0, 1, 0, 1, 0, 1], Background=[0, 0, 1],
+        ),
     )
     form = pdf.make_stream(
         b"q 0 0 80 80 re W n /Sh2 sh Q",
@@ -138,6 +144,8 @@ def degrades() -> None:
         Font=Dictionary(F1=font(pdf)),
     )
     first = (
+        b"% fundo: sh sem recorte, com escala (pinta a pagina toda)\n"
+        b"q 0.5 0 0 0.5 0 0 cm /Sh7 sh Q\n"
         b"% degrades com recorte (tecnica validada)\n"
         b"q 1 0 0 1 50 650 cm 0 0 100 100 re W n /Sh1 sh Q\n"
         b"q 200 650 m 300 650 l 300 750 l h W* n 1 0 0 1 200 650 cm /Sh2 sh Q\n"
@@ -147,10 +155,10 @@ def degrades() -> None:
         b"q 200 500 100 100 re W n /Sh4 sh Q\n"
         b"q 350 500 100 100 re W n /Sh5 sh Q\n"
         b"q 350 650 100 100 re W n /Sh6 sh Q\n"
-        b"q 1 0 0 1 0 0 cm /Sh7 sh Q\n"
+        b"q 50 200 50 50 re W n /Sh8 sh Q\n"
         b"q /Pattern cs /P1 scn 50 350 100 100 re f Q\n"
         b"BT /F1 12 Tf 50 300 Td (texto \\(com par\\352nteses\\) e sh no meio) Tj ET\n"
-        b"q 20 0 0 20 400 300 cm BI /W 2 /H 2 /CS /G /BPC 8 ID \x00sh)\xff EI Q\n"
+        b"q 20 0 0 20 400 300 cm BI /W 2 /H 2 /CS /G /BPC 8 ID \x00sh) EI Q\n"
         b"q 1 0 0 1 200 300 cm /Fm1 Do Q\n"
     )
     page.obj.Contents = Array([pdf.make_stream(first), pdf.make_stream(second)])
