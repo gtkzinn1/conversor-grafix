@@ -32,6 +32,8 @@ export interface FileQueue {
   readonly add: (files: readonly File[], processor?: Processor) => void;
   readonly remove: (id: string) => void;
   readonly submitPassword: (id: string, password: string) => void;
+  /** Troca o resultado de um item já processado (ex.: depois de ajustar no editor). */
+  readonly replaceResult: (id: string, result: ProcessResult) => void;
 }
 
 /**
@@ -155,5 +157,13 @@ export function useFileQueue(accepts: readonly FileKind[]): FileQueue {
     [items, runProcessor],
   );
 
-  return { items, overflow, add, remove, submitPassword };
+  const replaceResult = useCallback((id: string, result: ProcessResult) => {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === id && item.status === 'done' ? { ...item, result } : item,
+      ),
+    );
+  }, []);
+
+  return { items, overflow, add, remove, submitPassword, replaceResult };
 }
