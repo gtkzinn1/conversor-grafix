@@ -211,7 +211,11 @@ export function PdfCropEditor() {
             {page && (
               <div
                 class="crop-page"
-                style={{ aspectRatio: `${String(page.widthPt)} / ${String(page.heightPt)}` }}
+                style={{
+                  aspectRatio: `${String(page.widthPt)} / ${String(page.heightPt)}`,
+                  // Cabe inteira na altura da tela: a largura segue a proporção da página.
+                  width: `min(100%, calc(70dvh * ${String(page.widthPt / page.heightPt)}))`,
+                }}
               >
                 <img src={page.url} alt={`Página ${String(page.number)}`} draggable={false} />
                 <div
