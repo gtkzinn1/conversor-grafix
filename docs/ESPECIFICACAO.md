@@ -9,7 +9,7 @@ App privado da **Grafix – Gráfica e Comunicação Visual**, usado em 3 comput
 Estas regras valem para **todo** o desenvolvimento, sem exceção.
 
 1. **Aguardar o comando do usuário** antes de iniciar cada etapa. Não fazer nada além do que foi pedido. Ao terminar uma etapa, apresentar o resultado e esperar.
-2. **Segurança em primeiro lugar.** Mesmo processando tudo localmente, o app deve ser construído como se recebesse arquivos hostis (PDFs e PSDs de clientes são considerados **não confiáveis**). Nenhuma etapa é concluída sem passar pelo checklist de segurança dela.
+2. **Segurança em primeiro lugar.** Mesmo processando tudo localmente, o app deve ser construído como se recebesse arquivos hostis (PDFs e imagens de clientes são considerados **não confiáveis**). Nenhuma etapa é concluída sem passar pelo checklist de segurança dela.
 3. **Qualidade antes de velocidade.** Cada etapa só termina quando:
    - o código foi **analisado e revisado** (revisão própria, linha a linha, antes de entregar);
    - os **testes automáticos** da etapa passam;
@@ -116,14 +116,9 @@ Correção básica **mais** a troca dos degradês que o Corel não importa por c
 - **Editor de ajuste:** pincéis **Apagar** e **Restaurar** (a partir do original), tamanho e suavidade, zoom e pan, fundo xadrez ou cor sólida para conferir, **desfazer/refazer**.
 - Saída: **PNG transparente** na resolução original. Desejável: fila de várias imagens.
 
-### 2.3 PSD → PDF — prioridade 3
+### 2.3 PSD → PDF — removida
 
-- Converter sem abrir o Photoshop, usando a **imagem composta** do PSD, mesma resolução e DPI.
-- Melhor resultado com PSD salvo com **"Maximizar compatibilidade"**. Sem a imagem composta, montar pelas camadas e **avisar** que efeitos/ajustes podem diferir.
-- Biblioteca candidata: **ag-psd** (MIT). PDF gerado com **pdf-lib** (MIT).
-- Página do PDF = tamanho físico do documento (pixels ÷ DPI).
-- **Cores:** manter o modo original. Se o PSD for CMYK, embutir em **DeviceCMYK** sem passar por RGB (verificar na Etapa 4 se a biblioteca expõe os dados CMYK crus; se não expuser, documentar e escolher alternativa).
-- Suportar PSB (arquivos grandes) apenas se a biblioteca suportar com segurança; caso contrário, avisar.
+Retirada do escopo em 2026-11-11 (ver seção 11): o PSD era só um desvio para PDFs que o Corel não importava, o que a ferramenta 2.1 resolve direto, mantendo os vetores.
 
 ### 2.4 Ferramentas extras
 
@@ -161,17 +156,17 @@ Arquivos `.cdr` (inclusive salvar `.cdr` em versão mais antiga: formato fechado
 
 ### 3.2 Riscos e defesas
 
-| Risco                                                             | Defesa                                                                                                                                                                                                                                               |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arquivo malicioso (PDF/PSD/imagem) explorando falha de biblioteca | Processar em **Web Workers** (um por tarefa, encerrado ao final); bibliotecas atualizadas; WASM (sandbox); limites de tamanho/tempo; pdf.js com `isEvalSupported: false` e versão ≥ 4.2.67 (corrige CVE-2024-4367); nunca executar JavaScript de PDF |
-| Injeção de HTML pelo nome do arquivo ou metadados                 | Nunca usar `innerHTML` com dados de arquivo; usar `textContent`/JSX; CSP estrita; regras de lint que proíbem HTML montado com string                                                                                                                 |
-| Dependência npm adulterada (cadeia de suprimentos)                | Poucas dependências; versões **fixas** com `package-lock.json`; `npm ci`; scripts de instalação desativados; só versões com ≥ 14 dias; `npm audit` e Dependabot (com espera de 7 dias); Actions fixadas por SHA                                      |
-| Modelo de IA adulterado                                           | Baixar de **revisão fixa (commit)** do Hugging Face; conferir **SHA-256** antes de usar e guardar; usar só formato **ONNX** (nunca `.pt`/pickle, que pode executar código)                                                                           |
-| Alguém publicar versão adulterada do app                          | GitHub e Cloudflare com **2FA**; repositório privado; branch principal protegida; deploy só pela branch principal                                                                                                                                    |
-| Vazamento de arquivos para a internet                             | Sem analytics/CDN; CSP com `connect-src` restrito; nenhum `fetch` para fora exceto o modelo; testes ponta a ponta reprovam qualquer requisição externa                                                                                               |
-| Terceiros usando o app pelo link                                  | Sem risco aos dados (tudo é local), mas opcionalmente proteger com **Cloudflare Access** (seção 8.4)                                                                                                                                                 |
-| Versão antiga presa em cache (bugs "fantasmas")                   | Service worker com aviso "Nova versão disponível"; limpeza de caches antigos; arquivos com hash no nome; `sw.js` sem cache HTTP                                                                                                                      |
-| Travamento por arquivo enorme                                     | Limites configuráveis, leitura em streaming quando possível, avisos claros, botão cancelar, tempo-limite por tarefa                                                                                                                                  |
+| Risco                                                         | Defesa                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arquivo malicioso (PDF/imagem) explorando falha de biblioteca | Processar em **Web Workers** (um por tarefa, encerrado ao final); bibliotecas atualizadas; WASM (sandbox); limites de tamanho/tempo; pdf.js com `isEvalSupported: false` e versão ≥ 4.2.67 (corrige CVE-2024-4367); nunca executar JavaScript de PDF |
+| Injeção de HTML pelo nome do arquivo ou metadados             | Nunca usar `innerHTML` com dados de arquivo; usar `textContent`/JSX; CSP estrita; regras de lint que proíbem HTML montado com string                                                                                                                 |
+| Dependência npm adulterada (cadeia de suprimentos)            | Poucas dependências; versões **fixas** com `package-lock.json`; `npm ci`; scripts de instalação desativados; só versões com ≥ 14 dias; `npm audit` e Dependabot (com espera de 7 dias); Actions fixadas por SHA                                      |
+| Modelo de IA adulterado                                       | Baixar de **revisão fixa (commit)** do Hugging Face; conferir **SHA-256** antes de usar e guardar; usar só formato **ONNX** (nunca `.pt`/pickle, que pode executar código)                                                                           |
+| Alguém publicar versão adulterada do app                      | GitHub e Cloudflare com **2FA**; repositório privado; branch principal protegida; deploy só pela branch principal                                                                                                                                    |
+| Vazamento de arquivos para a internet                         | Sem analytics/CDN; CSP com `connect-src` restrito; nenhum `fetch` para fora exceto o modelo; testes ponta a ponta reprovam qualquer requisição externa                                                                                               |
+| Terceiros usando o app pelo link                              | Sem risco aos dados (tudo é local), mas opcionalmente proteger com **Cloudflare Access** (seção 8.4)                                                                                                                                                 |
+| Versão antiga presa em cache (bugs "fantasmas")               | Service worker com aviso "Nova versão disponível"; limpeza de caches antigos; arquivos com hash no nome; `sw.js` sem cache HTTP                                                                                                                      |
+| Travamento por arquivo enorme                                 | Limites configuráveis, leitura em streaming quando possível, avisos claros, botão cancelar, tempo-limite por tarefa                                                                                                                                  |
 
 ### 3.3 Cabeçalhos de segurança (arquivo `public/_headers` do Cloudflare Pages)
 
@@ -215,7 +210,6 @@ Notas:
 | Reparo/reescrita de PDF | **qpdf** compilado por nós para WASM (`scripts/qpdf-wasm/`, workflow `qpdf-wasm`)  | 12.4.2 (Emscripten 6.0.13)        | Apache 2.0                | Em uso (Etapa 2). Binário em `vendor/qpdf/`, SHA-256 conferido no CI |
 | Manipular PDF           | **pdf-lib**                                                                        | —                                 | MIT                       | Etapas 4–5                                                           |
 | Renderizar PDF          | **pdf.js** (`pdfjs-dist`), em worker aninhado, sem fontes do sistema e sem scripts | 6.4.299                           | Apache 2.0                | Em uso (Etapa 2: conferência visual)                                 |
-| Ler PSD                 | **ag-psd**                                                                         | —                                 | MIT                       | Etapa 4                                                              |
 | IA                      | **ONNX Runtime Web** + BiRefNet ONNX                                               | —                                 | MIT                       | Etapa 3                                                              |
 | CMYK                    | **lcms2 em WASM**                                                                  | —                                 | MIT                       | Etapa 7                                                              |
 
@@ -363,7 +357,6 @@ Gerados por `scripts/samples/generate_samples.py` (sintéticos, sem dados de cli
 
 - O logo do pão de queijo (degradês com recorte).
 - PDFs com: object streams (PDF 1.5+), protegido sem senha, com senha de abertura, JPEG2000, JBIG2, várias páginas, Form XObjects, padrões de degradê, fontes embutidas, transparência, arquivo corrompido, arquivo vazio, arquivo que não é PDF com extensão `.pdf`.
-- PSDs: RGB, CMYK, com e sem "Maximizar compatibilidade", grande.
 - Imagens: JPG, PNG com transparência, WebP, muito grande, cabelo/pelo para recorte.
 - Usar apenas arquivos sem dados sensíveis, ou com autorização.
 
@@ -416,12 +409,9 @@ Cada etapa segue o mesmo ciclo: **planejar → implementar → testar → revisa
 
 **Aceite:** recorte funciona com e sem WebGPU; hash verificado; offline após o primeiro download; editor estável com imagens grandes.
 
-### Etapa 4 — PSD → PDF
+### Etapa 4 — removida
 
-1. Validar ag-psd (CMYK, memória, imagem composta).
-2. Conversão mantendo modo de cor e DPI; avisos quando faltar imagem composta.
-
-**Aceite:** PSD RGB e CMYK geram PDF correto, com tamanho físico certo; CMYK mantido.
+PSD → PDF saiu do escopo (seção 2.3). A numeração das etapas seguintes foi mantida.
 
 ### Etapa 5 — Ferramentas de PDF
 
@@ -487,6 +477,7 @@ Atualizar a cada decisão técnica relevante.
 | 2026-11-11 | Falha da placa de vídeo desliga o WebGPU naquele computador                                                 | Dispositivo perdido, worker encerrado ou tempo esgotado com modelo de placa: grava a preferência e volta ao processador. O usuário pode religar em “Sobre”                                                                                                               |
 | 2026-11-11 | `connect-src` só com `huggingface.co` e `*.hf.co`                                                           | Hosts vistos no download real (redirecionamento para `*.cdn.hf.co`); `*.huggingface.co` não é usado                                                                                                                                                                      |
 | 2026-11-11 | Modelo guardado no OPFS (sistema de arquivos privado do site), não na Cache API                             | No teste real, o Chrome recusou `cache.put` acima de algumas centenas de MB (“Unexpected internal error”); o OPFS gravou e leu 940 MB. O SHA-256 é conferido no download e a cada carga                                                                                  |
+| 2026-11-11 | PSD → PDF retirado do escopo (Etapa 4)                                                                      | O usuário só abria o PDF no Photoshop para contornar a importação no Corel; a ferramenta “Corrigir PDF para o Corel” resolve isso sem rasterizar                                                                                                                         |
 
 ---
 

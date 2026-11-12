@@ -27,7 +27,6 @@ test.describe('casca do app', () => {
     const expected = [
       ['Remover fundo', 'Remover fundo'],
       ['Converter imagens', 'Converter imagens'],
-      ['PSD para PDF', 'PSD para PDF'],
       ['Editar PDF', 'Editar PDF'],
       ['Corrigir PDF', 'Corrigir PDF para o Corel'],
     ] as const;

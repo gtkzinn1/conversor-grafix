@@ -75,17 +75,6 @@ export const TOOLS: readonly ToolDefinition[] = [
     availableInStage: 6,
   },
   {
-    id: 'psd-para-pdf',
-    group: 'PDF',
-    name: 'PSD para PDF',
-    menuLabel: 'PSD para PDF',
-    description: 'Converte o PSD em PDF sem abrir o Photoshop, mantendo resolução e cores.',
-    icon: 'layers',
-    accepts: ['psd', 'psb'],
-    dropLabel: 'Solte os PSDs aqui',
-    availableInStage: 4,
-  },
-  {
     id: 'editar-pdf',
     group: 'PDF',
     name: 'Editar PDF',

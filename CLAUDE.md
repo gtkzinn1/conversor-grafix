@@ -2,6 +2,8 @@
 
 Regras do projeto, escopo, stack e etapas: `docs/ESPECIFICACAO.md` (seções 0 e 10). Não repetir aqui o que já está lá; apontar para ela.
 
+Situação atual, pendências e forma de trabalho: `docs/ANDAMENTO.md` (ler no início de cada sessão e atualizar ao fim de cada etapa).
+
 ## Respostas
 
 - Curtas e diretas, em português. Sem abertura elogiosa, sem fecho de cortesia, sem emojis.
