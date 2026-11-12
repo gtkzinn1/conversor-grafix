@@ -14,7 +14,7 @@ Atualizado em 2026-11-12.
 | 4. PSD → PDF                  | **Removida** do escopo | PR #10 |
 | 5. Ferramentas de PDF         | Pronta                 | PR #11 |
 | 6. Ferramentas de imagem      | Pronta                 | PR #12 |
-| 7. CMYK (FOGRA39)             | Adiada                 | —      |
+| 7. CMYK (FOGRA39)             | **Removida** do escopo | PR #16 |
 | 8. Revisão final e publicação | Pronta                 | PR #14 |
 
 ## O que já funciona
@@ -28,7 +28,6 @@ Atualizado em 2026-11-12.
 
 ## Pendências
 
-- Etapa 7 (CMYK) adiada; rever depois do uso no dia a dia.
 - WebGPU nesta placa AMD GCN-4 trava (TDR): não usar a opção de placa de vídeo nela.
 
 ## Como trabalhamos
@@ -50,4 +49,4 @@ npm ci
 
 Se já tiver o projeto: `git checkout main` e `git pull`, depois `npm ci`. Para abrir o app: `npm run build` e `npm run preview` (endereço `http://localhost:4173`).
 
-Todas as etapas do escopo estão prontas. Para uma melhoria nova (ex.: CMYK), abrir uma sessão nova do Claude na pasta do projeto e descrever o pedido.
+Todas as etapas do escopo estão prontas. Para uma melhoria nova, abrir uma sessão nova do Claude na pasta do projeto e descrever o pedido.
