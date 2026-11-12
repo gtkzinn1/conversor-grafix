@@ -15,7 +15,7 @@ Atualizado em 2026-11-12.
 | 5. Ferramentas de PDF         | Pronta                 | PR #11 |
 | 6. Ferramentas de imagem      | Pronta                 | PR #12 |
 | 7. CMYK (FOGRA39)             | Adiada                 | —      |
-| 8. Revisão final e publicação | Em teste               | PR #14 |
+| 8. Revisão final e publicação | Pronta                 | PR #14 |
 
 ## O que já funciona
 
@@ -24,12 +24,11 @@ Atualizado em 2026-11-12.
 - **Editar PDF:** juntar (ordem ajustável), separar (ZIP), extrair e girar por miniaturas, cortar desenhando a área (só a página ou todas; redefine as caixas, sem rasterizar), comprimir (imagens em JPEG ou sem perda) e PDF → imagem (PNG/JPG, 150–600 DPI). Testado no CorelDRAW 27.
 - **Converter imagens:** JPG/PNG/WebP com qualidade, tamanho em px, % ou cm + DPI (DPI gravado no arquivo), transparência mantida no PNG/WebP e fundo branco ou preto no JPG. Imagens para PDF com miniaturas para ordenar, página no tamanho da imagem, A4 ou A3 e margem; JPEG entra sem recompressão (CMYK mantido).
 - **Casca do app:** PWA instalável e offline, tema claro/escuro, menu lateral (layout "bancada"), tela Sobre com licenças e o bloco "Modelo de IA".
+- **Publicado em https://grafix-conversor.pages.dev** (Cloudflare Pages, deploy da `main`; cabeçalhos conferidos). Sem Cloudflare Access: o app fica público, sem risco aos arquivos (tudo roda no computador). Testado pelo usuário nos 3 computadores (remover fundo, offline e atualização); previews de outras branches desligados.
 
 ## Pendências
 
-- **Publicado em https://grafix-conversor.pages.dev** (Cloudflare Pages, deploy da `main`; cabeçalhos conferidos). Sem Cloudflare Access: o app fica público, sem risco aos arquivos (tudo roda no computador).
-- **Testar nos 3 computadores:** instalar pelo Chrome, remover fundo (e o WebGPU onde houver), uso offline e o aviso de atualização depois do merge do PR da Etapa 8.
-- Desligar os previews de outras branches no Cloudflare Pages (Configurações → Builds → Branch control).
+- Etapa 7 (CMYK) adiada; rever depois do uso no dia a dia.
 - WebGPU nesta placa AMD GCN-4 trava (TDR): não usar a opção de placa de vídeo nela.
 
 ## Como trabalhamos
@@ -51,4 +50,4 @@ npm ci
 
 Se já tiver o projeto: `git checkout main` e `git pull`, depois `npm ci`. Para abrir o app: `npm run build` e `npm run preview` (endereço `http://localhost:4173`).
 
-Para retomar a Etapa 8, abrir uma sessão nova do Claude na pasta do projeto e pedir: "continuar a Etapa 8".
+Todas as etapas do escopo estão prontas. Para uma melhoria nova (ex.: CMYK), abrir uma sessão nova do Claude na pasta do projeto e descrever o pedido.
