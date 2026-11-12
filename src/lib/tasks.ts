@@ -1,4 +1,10 @@
+import { AppError } from './shared/errors';
 import { runWorkerTask, type TaskProgress } from './run-worker-task';
+import {
+  isImageTaskOutput,
+  type ImageTaskInput,
+  type ImageTaskOutput,
+} from './shared/tasks/convert-image';
 import {
   isPdfCorelOutput,
   type PdfCorelInput,
@@ -120,4 +126,23 @@ export function renderPdf(
     // Muitas páginas em alta resolução podem levar alguns minutos.
     { ...options, timeoutMs: 15 * 60_000, validateOutput: isPdfRenderOutput },
   );
+}
+
+/** Converter imagens; a saída tem o mesmo `kind` da entrada. */
+export async function runImageTask<Input extends ImageTaskInput>(
+  input: Input,
+  options: TaskOptions = {},
+): Promise<Extract<ImageTaskOutput, { kind: Input['kind'] }>> {
+  const output = await runWorkerTask<ImageTaskInput, ImageTaskOutput>(
+    () =>
+      new Worker(new URL('../workers/convert-image.worker.ts', import.meta.url), {
+        type: 'module',
+        name: 'convert-image',
+      }),
+    input,
+    { ...options, timeoutMs: 10 * 60_000, validateOutput: isImageTaskOutput },
+  );
+  if (output.kind !== input.kind)
+    throw new AppError('unexpected', undefined, 'Resultado de outra tarefa.');
+  return output as Extract<ImageTaskOutput, { kind: Input['kind'] }>;
 }
