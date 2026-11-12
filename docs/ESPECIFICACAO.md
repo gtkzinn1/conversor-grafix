@@ -166,7 +166,7 @@ Arquivos `.cdr` (inclusive salvar `.cdr` em versão mais antiga: formato fechado
 | Injeção de HTML pelo nome do arquivo ou metadados             | Nunca usar `innerHTML` com dados de arquivo; usar `textContent`/JSX; CSP estrita; regras de lint que proíbem HTML montado com string                                                                                                                 |
 | Dependência npm adulterada (cadeia de suprimentos)            | Poucas dependências; versões **fixas** com `package-lock.json`; `npm ci`; scripts de instalação desativados; só versões com ≥ 14 dias; `npm audit` e Dependabot (com espera de 7 dias); Actions fixadas por SHA                                      |
 | Modelo de IA adulterado                                       | Baixar de **revisão fixa (commit)** do Hugging Face; conferir **SHA-256** antes de usar e guardar; usar só formato **ONNX** (nunca `.pt`/pickle, que pode executar código)                                                                           |
-| Alguém publicar versão adulterada do app                      | GitHub e Cloudflare com **2FA**; repositório privado; branch principal protegida; deploy só pela branch principal                                                                                                                                    |
+| Alguém publicar versão adulterada do app                      | GitHub e Cloudflare com **2FA**; repositório público sem segredos; branch principal protegida; deploy só pela branch principal                                                                                                                       |
 | Vazamento de arquivos para a internet                         | Sem analytics/CDN; CSP com `connect-src` restrito; nenhum `fetch` para fora exceto o modelo; testes ponta a ponta reprovam qualquer requisição externa                                                                                               |
 | Terceiros usando o app pelo link                              | Sem risco aos dados (tudo é local), mas opcionalmente proteger com **Cloudflare Access** (seção 8.4)                                                                                                                                                 |
 | Versão antiga presa em cache (bugs "fantasmas")               | Service worker com aviso "Nova versão disponível"; limpeza de caches antigos; arquivos com hash no nome; `sw.js` sem cache HTTP                                                                                                                      |
@@ -319,7 +319,7 @@ conversor-grafix/
 ### 8.1 Antes de começar (feito pelo usuário)
 
 1. Ativar **verificação em duas etapas (2FA)** no GitHub e na Cloudflare.
-2. Criar repositório **privado** `conversor-grafix` no GitHub. ✅ (`gtkzinn1/conversor-grafix`)
+2. Criar repositório `conversor-grafix` no GitHub. ✅ (`gtkzinn1/conversor-grafix`, público desde 2026-11-12, como portfólio)
 
 ### 8.2 Repositório
 
@@ -333,7 +333,7 @@ conversor-grafix/
 - Projeto ligado ao repositório: build `npm ci && npm run build`, saída `dist`, versão de Node fixada em `.node-version` (24).
 - Limites do plano gratuito (conferir em https://developers.cloudflare.com/pages/platform/limits): até 100 projetos por conta, 500 builds/mês, 20.000 arquivos por site, **25 MiB por arquivo**.
 - **Previews** de outras branches: desativar ou proteger com Access, para não ficarem públicas.
-- Endereço: `conversor-grafix.pages.dev` (ou subdomínio próprio).
+- Endereço: `grafix-conversor.pages.dev` (projeto `grafix-conversor`; sem domínio próprio).
 
 ### 8.4 Acesso restrito (opcional, recomendado)
 
@@ -490,6 +490,7 @@ Atualizar a cada decisão técnica relevante.
 | 2026-11-12 | PDF de imagens escrito por nós (~200 linhas), não pelo qpdf nem por pdf-lib                                                                   | Saída simples (uma imagem por página); JPEG entra como está (`DCTDecode`), sem perda e com CMYK mantido; orientação EXIF vira a matriz da página                                                                                                                         |
 | 2026-11-12 | ZIP próprio (sem compressão) para “Separar” e “PDF para imagem”                                                                               | ~100 linhas, sem dependência; PDFs e imagens já vêm comprimidos                                                                                                                                                                                                          |
 | 2026-11-12 | Etapa 7 (CMYK) adiada                                                                                                                         | O usuário troca o modo de cor no CorelDRAW depois de converter; rever depois do uso no dia a dia                                                                                                                                                                         |
+| 2026-11-12 | Endereço `grafix-conversor.pages.dev`, sem domínio próprio                                                                                    | Escolhido pelo usuário                                                                                                                                                                                                                                                   |
 
 ---
 

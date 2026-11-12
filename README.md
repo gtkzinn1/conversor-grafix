@@ -111,7 +111,7 @@ As amostras de teste em `tests/samples/` são sintéticas: `scripts/samples/gene
 
 ## Publicação e instalação
 
-Hospedado no **Cloudflare Pages** a partir da branch `main` (build `npm ci && npm run build`, saída `dist`). A hospedagem serve apenas os arquivos do app.
+Hospedado no **Cloudflare Pages** em `https://grafix-conversor.pages.dev`, a partir da branch `main` (build `npm ci && npm run build`, saída `dist`). A hospedagem serve apenas os arquivos do app.
 
 Para instalar: abrir o endereço no Chrome → ícone de instalar na barra de endereço → **Instalar**. O app abre em janela própria, funciona offline e avisa quando há versão nova.
 
