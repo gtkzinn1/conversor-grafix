@@ -13,8 +13,8 @@ Atualizado em 2026-11-12.
 | 3. Remover fundo              | Pronta                 | PR #9  |
 | 4. PSD → PDF                  | **Removida** do escopo | PR #10 |
 | 5. Ferramentas de PDF         | Pronta                 | PR #11 |
-| 6. Ferramentas de imagem      | Em revisão             | —      |
-| 7. CMYK (FOGRA39)             | Pendente               | —      |
+| 6. Ferramentas de imagem      | Pronta                 | PR #12 |
+| 7. CMYK (FOGRA39)             | Adiada                 | —      |
 | 8. Revisão final e publicação | Pendente               | —      |
 
 ## O que já funciona
@@ -49,4 +49,4 @@ npm ci
 
 Se já tiver o projeto: `git checkout main` e `git pull`, depois `npm ci`. Para abrir o app: `npm run build` e `npm run preview` (endereço `http://localhost:4173`).
 
-Para começar a próxima etapa, abrir uma sessão nova do Claude na pasta do projeto e pedir: "Etapa 7".
+Para começar a próxima etapa, abrir uma sessão nova do Claude na pasta do projeto e pedir: "Etapa 8".
