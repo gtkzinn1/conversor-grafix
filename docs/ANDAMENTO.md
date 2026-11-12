@@ -2,7 +2,7 @@
 
 Resumo para retomar o trabalho em qualquer computador. Detalhes técnicos e decisões: `docs/ESPECIFICACAO.md` (seções 10 e 11). Regras para o Claude: `CLAUDE.md`.
 
-Atualizado em 2026-11-11.
+Atualizado em 2026-11-12.
 
 ## Situação das etapas
 
@@ -31,7 +31,7 @@ Atualizado em 2026-11-11.
 ## Como trabalhamos
 
 - **Etapas:** cada uma numa sessão nova do Claude, só depois do comando do usuário. Ao terminar, apresentar e esperar o "está bom".
-- **Git:** uma branch e um PR por etapa; merge só depois do "está bom" e com o CI verde. Commits em Conventional Commits, em português. Nunca commitar direto na `main`. O repositório é portfólio: histórico e PRs organizados. No plano gratuito do GitHub a proteção de branch e o auto-merge não funcionam em repositório privado; a regra é seguida por disciplina.
+- **Git:** uma branch e um PR por etapa; merge só depois do "está bom" e com o CI verde. Commits em Conventional Commits, em português. Nunca commitar direto na `main`. O repositório é portfólio: histórico e PRs organizados. O repositório é público (desde 2026-11-12), com minutos de CI ilimitados; a regra de merge é seguida por disciplina.
 - **Interface:** antes de qualquer tela nova, mostrar 2–3 mockups para o usuário escolher. Interface enxuta, só o que tem função clara.
 - **Segurança pragmática:** arquivos de clientes são tratados como hostis (workers, limites, CSP rígida). Ferramentas de terceiros podem ser usadas depois de avaliadas (manutenção, licença, vulnerabilidades); não descartar só por serem de terceiros.
 - **Economia de tokens:** respostas curtas; só os testes do que mudou durante o trabalho (a bateria completa roda no CI); navegador manual só para o que o Playwright não cobre. Sessões até ~150 mil tokens de contexto; perto disso, registrar o andamento e abrir sessão nova.
