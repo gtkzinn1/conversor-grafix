@@ -15,7 +15,7 @@ Atualizado em 2026-11-12.
 | 5. Ferramentas de PDF         | Pronta                 | PR #11 |
 | 6. Ferramentas de imagem      | Pronta                 | PR #12 |
 | 7. CMYK (FOGRA39)             | Adiada                 | —      |
-| 8. Revisão final e publicação | Pendente               | —      |
+| 8. Revisão final e publicação | Em teste               | PR #14 |
 
 ## O que já funciona
 
@@ -27,13 +27,15 @@ Atualizado em 2026-11-12.
 
 ## Pendências
 
-- **Testar o remover fundo nos outros 2 computadores** (e o WebGPU onde houver): adiado para a Etapa 8, quando o app estiver publicado no Cloudflare Pages (basta abrir o endereço no Chrome).
+- **Publicado em https://grafix-conversor.pages.dev** (Cloudflare Pages, deploy da `main`; cabeçalhos conferidos). Sem Cloudflare Access: o app fica público, sem risco aos arquivos (tudo roda no computador).
+- **Testar nos 3 computadores:** instalar pelo Chrome, remover fundo (e o WebGPU onde houver), uso offline e o aviso de atualização depois do merge do PR da Etapa 8.
+- Desligar os previews de outras branches no Cloudflare Pages (Configurações → Builds → Branch control).
 - WebGPU nesta placa AMD GCN-4 trava (TDR): não usar a opção de placa de vídeo nela.
 
 ## Como trabalhamos
 
 - **Etapas:** cada uma numa sessão nova do Claude, só depois do comando do usuário. Ao terminar, apresentar e esperar o "está bom".
-- **Git:** uma branch e um PR por etapa; merge só depois do "está bom" e com o CI verde. Commits em Conventional Commits, em português. Nunca commitar direto na `main`. O repositório é portfólio: histórico e PRs organizados. O repositório é público (desde 2026-11-12), com minutos de CI ilimitados; a regra de merge é seguida por disciplina.
+- **Git:** uma branch e um PR por etapa; merge só depois do "está bom" e com o CI verde. Commits em Conventional Commits, em português. Nunca commitar direto na `main`. O repositório é portfólio: histórico e PRs organizados. O repositório é público (desde 2026-11-12), com minutos de CI ilimitados; a `main` é protegida (CI obrigatório, sem force push) e Dependabot e secret scanning estão ativos.
 - **Interface:** antes de qualquer tela nova, mostrar 2–3 mockups para o usuário escolher. Interface enxuta, só o que tem função clara.
 - **Segurança pragmática:** arquivos de clientes são tratados como hostis (workers, limites, CSP rígida). Ferramentas de terceiros podem ser usadas depois de avaliadas (manutenção, licença, vulnerabilidades); não descartar só por serem de terceiros.
 - **Economia de tokens:** respostas curtas; só os testes do que mudou durante o trabalho (a bateria completa roda no CI); navegador manual só para o que o Playwright não cobre. Sessões até ~150 mil tokens de contexto; perto disso, registrar o andamento e abrir sessão nova.
@@ -49,4 +51,4 @@ npm ci
 
 Se já tiver o projeto: `git checkout main` e `git pull`, depois `npm ci`. Para abrir o app: `npm run build` e `npm run preview` (endereço `http://localhost:4173`).
 
-Para começar a próxima etapa, abrir uma sessão nova do Claude na pasta do projeto e pedir: "Etapa 8".
+Para retomar a Etapa 8, abrir uma sessão nova do Claude na pasta do projeto e pedir: "continuar a Etapa 8".
