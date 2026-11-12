@@ -16,6 +16,7 @@ export type ErrorCode =
   | 'wrong-password'
   | 'invalid-pdf'
   | 'validation-failed'
+  | 'invalid-options'
   | 'model-download'
   | 'model-integrity'
   | 'model-missing'
@@ -37,6 +38,7 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   'invalid-pdf': 'Não foi possível ler este PDF. Ele pode estar corrompido.',
   'validation-failed':
     'O PDF corrigido não passou na conferência final, por isso não foi liberado. O original não foi alterado.',
+  'invalid-options': 'As opções escolhidas não servem para este arquivo.',
   'model-download':
     'Não foi possível baixar o modelo de IA. Confira a conexão com a internet e tente de novo.',
   'model-integrity':

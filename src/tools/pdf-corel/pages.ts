@@ -5,6 +5,8 @@ export interface PageInfo {
   readonly key: string;
   /** [x0, y0, x1, y1] em pontos, já considerando herança da árvore de páginas. */
   readonly mediaBox: readonly number[];
+  /** CropBox (também herdável), quando existir. */
+  readonly cropBox?: readonly number[];
   readonly rotate: number;
 }
 
@@ -30,6 +32,7 @@ export function listPages(doc: PdfJsonDocument): PageInfo[] {
   const walk = (
     ref: string,
     inheritedBox: number[] | undefined,
+    inheritedCrop: number[] | undefined,
     inheritedRotate: number,
     depth: number,
   ) => {
@@ -39,19 +42,23 @@ export function listPages(doc: PdfJsonDocument): PageInfo[] {
     const node = doc.dict(key);
     if (node === undefined) return;
     const box = toBox(doc.resolve(node['/MediaBox'])) ?? inheritedBox;
+    const crop = toBox(doc.resolve(node['/CropBox'])) ?? inheritedCrop;
     const rotateValue = doc.resolve(node['/Rotate']);
     const rotate = typeof rotateValue === 'number' ? rotateValue : inheritedRotate;
     if (node['/Type'] === '/Pages' || Array.isArray(doc.resolve(node['/Kids']))) {
       const kids = doc.resolve(node['/Kids']);
       if (Array.isArray(kids)) {
-        for (const kid of kids) if (isRef(kid)) walk(kid, box, rotate, depth + 1);
+        for (const kid of kids) if (isRef(kid)) walk(kid, box, crop, rotate, depth + 1);
       }
       return;
     }
-    pages.push({ key, mediaBox: box ?? [0, 0, 612, 792], rotate });
+    const mediaBox = box ?? [0, 0, 612, 792];
+    pages.push(
+      crop === undefined ? { key, mediaBox, rotate } : { key, mediaBox, cropBox: crop, rotate },
+    );
   };
 
-  walk(rootPages, undefined, 0, 0);
+  walk(rootPages, undefined, undefined, 0, 0);
   return pages;
 }
 

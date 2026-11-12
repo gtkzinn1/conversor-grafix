@@ -4,6 +4,12 @@ import {
   type PdfCorelInput,
   type PdfCorelOutput,
 } from './shared/tasks/pdf-corel';
+import { isPdfEditOutput, type PdfEditInput, type PdfEditOutput } from './shared/tasks/pdf-edit';
+import {
+  isPdfRenderOutput,
+  type PdfRenderInput,
+  type PdfRenderOutput,
+} from './shared/tasks/pdf-render';
 import {
   isInspectFileOutput,
   type InspectFileInput,
@@ -85,5 +91,33 @@ export function fixPdfForCorel(
     input,
     // PDFs grandes com muitas imagens podem levar alguns minutos.
     { ...options, timeoutMs: 10 * 60_000, validateOutput: isPdfCorelOutput },
+  );
+}
+
+export function editPdf(input: PdfEditInput, options: TaskOptions = {}): Promise<PdfEditOutput> {
+  return runWorkerTask<PdfEditInput, PdfEditOutput>(
+    () =>
+      new Worker(new URL('../workers/pdf-edit.worker.ts', import.meta.url), {
+        type: 'module',
+        name: 'pdf-edit',
+      }),
+    input,
+    { ...options, timeoutMs: 10 * 60_000, validateOutput: isPdfEditOutput },
+  );
+}
+
+export function renderPdf(
+  input: PdfRenderInput,
+  options: TaskOptions = {},
+): Promise<PdfRenderOutput> {
+  return runWorkerTask<PdfRenderInput, PdfRenderOutput>(
+    () =>
+      new Worker(new URL('../workers/pdf-render.worker.ts', import.meta.url), {
+        type: 'module',
+        name: 'pdf-render',
+      }),
+    input,
+    // Muitas páginas em alta resolução podem levar alguns minutos.
+    { ...options, timeoutMs: 15 * 60_000, validateOutput: isPdfRenderOutput },
   );
 }

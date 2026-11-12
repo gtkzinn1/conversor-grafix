@@ -228,6 +228,47 @@ def corrupted() -> None:
     print("corrompido", path.name)
 
 
+def multi_pages() -> None:
+    """Três páginas para as ferramentas de PDF: A4, A4 deitada com /Rotate 90 e uma com CropBox."""
+    pdf = Pdf.new()
+    f1 = font(pdf)
+    sizes = [(595, 842), (595, 842), (400, 300)]
+    for number, (width, height) in enumerate(sizes, start=1):
+        pdf.add_blank_page(page_size=(width, height))
+        page = pdf.pages[-1]
+        page.obj.Resources = Dictionary(Font=Dictionary(F1=f1))
+        page.obj.Contents = pdf.make_stream(
+            f"0 0 1 rg 20 20 60 60 re f BT /F1 24 Tf 100 100 Td (Pagina {number}) Tj ET".encode("latin-1")
+        )
+    pdf.pages[1].obj.Rotate = 90
+    pdf.pages[2].obj.MediaBox = Array([0, 0, 400, 300])
+    pdf.pages[2].obj.CropBox = Array([10, 20, 390, 280])
+    save(pdf, "paginas.pdf", min_version="1.4", object_stream_mode=pikepdf.ObjectStreamMode.disable)
+
+
+def heavy_image() -> None:
+    """Imagem RGB de 600 × 600 em Flate (tipo foto): o "Comprimir" deve reduzir bastante."""
+    import math
+    import random
+
+    rng = random.Random(42)
+    side = 600
+    pixels = bytearray()
+    for y in range(side):
+        for x in range(side):
+            base = 128 + 100 * math.sin(x / 23) * math.cos(y / 31)
+            pixels += bytes(max(0, min(255, int(base + rng.randint(-12, 12) + shift))) for shift in (0, 40, -40))
+    pdf = new_pdf()
+    image = pdf.make_stream(
+        zlib.compress(bytes(pixels)), Type=Name.XObject, Subtype=Name.Image, Width=side, Height=side,
+        ColorSpace=Name.DeviceRGB, BitsPerComponent=8, Filter=Name.FlateDecode,
+    )
+    page = pdf.pages[0]
+    page.obj.Resources = Dictionary(XObject=Dictionary(Im1=image))
+    page.obj.Contents = pdf.make_stream(b"q 500 0 0 500 47 171 cm /Im1 Do Q")
+    save(pdf, "imagem-pesada.pdf", min_version="1.4", object_stream_mode=pikepdf.ObjectStreamMode.disable)
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     canva_tags()
@@ -236,6 +277,8 @@ def main() -> None:
     protected()
     object_streams()
     corrupted()
+    multi_pages()
+    heavy_image()
 
 
 if __name__ == "__main__":
