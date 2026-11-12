@@ -4,7 +4,9 @@ import type { TaskProgress } from '../lib/run-worker-task';
 import { AppError } from '../lib/shared/errors';
 import { DEFAULT_LIMITS } from '../lib/shared/limits';
 import { markGpuFailed } from '../lib/storage';
-import { fixPdfForCorel, removeBackground } from '../lib/tasks';
+import { formatBytes } from '../lib/shared/limits';
+import type { ImageFormat } from '../lib/shared/tasks/pdf-render';
+import { editPdf, fixPdfForCorel, removeBackground, renderPdf } from '../lib/tasks';
 import { findModel } from './remove-bg/models';
 
 /** Resultado pronto para baixar. */
@@ -128,6 +130,101 @@ export function processorFor(toolId: string, option: string): Processor | undefi
       fileName: deriveOutputName(file.name, { suffix: ' (corel)', extension: 'pdf' }),
       summary: summarizeCorelReport(report),
       warnings: report.warnings,
+    };
+  };
+}
+
+/** Opções das ferramentas de PDF que processam vários arquivos de uma vez. */
+export interface PdfBatchSettings {
+  readonly compressMode: 'lossless' | 'images';
+  /** Qualidade do JPEG (30 a 95). */
+  readonly jpegQuality: number;
+  readonly imageFormat: ImageFormat;
+  readonly dpi: number;
+}
+
+const pages = (count: number) => (count === 1 ? '1 página' : `${String(count)} páginas`);
+
+/** "Separar", "Comprimir" e "PDF para imagem": um arquivo por vez na lista. */
+export function pdfBatchProcessor(
+  option: 'separar' | 'comprimir' | 'para-imagem',
+  settings: PdfBatchSettings,
+): Processor {
+  return async (file, { signal, onProgress, password }) => {
+    const withPassword = password === undefined ? {} : { password };
+    const options = { signal, onProgress };
+    const sources = [{ file, name: file.name }];
+
+    if (option === 'separar') {
+      const { result } = await editPdf(
+        {
+          sources,
+          ...withPassword,
+          operation: { kind: 'split', archiveBaseName: file.name.replace(/\.pdf$/i, '') },
+        },
+        options,
+      );
+      return {
+        blob: result,
+        fileName: deriveOutputName(file.name, { suffix: ' (páginas)', extension: 'zip' }),
+        summary: ['um PDF por página, num ZIP', formatBytes(result.size)],
+        warnings: [],
+      };
+    }
+
+    if (option === 'comprimir') {
+      const { result } = await editPdf(
+        {
+          sources,
+          ...withPassword,
+          operation: {
+            kind: 'compress',
+            mode: settings.compressMode,
+            quality: settings.jpegQuality,
+          },
+        },
+        options,
+      );
+      const saved = 1 - result.size / Math.max(1, file.size);
+      return {
+        blob: result,
+        fileName: deriveOutputName(file.name, { suffix: ' (comprimido)', extension: 'pdf' }),
+        summary: [
+          `${formatBytes(file.size)} → ${formatBytes(result.size)}`,
+          saved > 0.005 ? `${String(Math.round(saved * 100))}% menor` : 'sem redução',
+        ],
+        warnings:
+          saved <= 0.005
+            ? ['O arquivo não ficou menor: ele já estava otimizado ou tem poucas imagens.']
+            : [],
+      };
+    }
+
+    const extension = settings.imageFormat === 'png' ? 'png' : 'jpg';
+    const output = await renderPdf(
+      {
+        file,
+        ...withPassword,
+        pages: null,
+        scale: { kind: 'dpi', dpi: settings.dpi },
+        format: settings.imageFormat,
+        quality: settings.jpegQuality / 100,
+        archiveBaseName: file.name.replace(/\.pdf$/i, ''),
+      },
+      options,
+    );
+    // Uma página: a imagem vem direto, sem ZIP.
+    const blob = output.archive ?? output.pages[0]?.image;
+    if (blob === undefined) throw new AppError('unexpected');
+    const single = output.archive === undefined;
+    return {
+      blob,
+      fileName: deriveOutputName(file.name, {
+        suffix: single ? '' : ' (imagens)',
+        extension: single ? extension : 'zip',
+      }),
+      summary: [pages(output.pageCount), `${String(settings.dpi)} DPI`, extension.toUpperCase()],
+      warnings: [],
     };
   };
 }

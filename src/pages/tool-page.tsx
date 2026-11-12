@@ -6,15 +6,14 @@ import { acceptAttribute, describeKinds } from '../tools/accept-file';
 import { processorFor } from '../tools/processors';
 import type { ToolDefinition } from '../tools/registry';
 import { MAX_QUEUE_SIZE, useFileQueue } from '../tools/use-file-queue';
+import { PdfToolsPage } from './pdf-tools-page';
 import { RemoveBgPage } from './remove-bg-page';
 
-/** Tela de uma ferramenta. "Remover fundo" tem tela própria (modelo de IA e editor). */
+/** Tela de uma ferramenta. "Remover fundo" e "Editar PDF" têm telas próprias. */
 export function ToolPage({ tool }: { tool: ToolDefinition }) {
-  return tool.id === 'remover-fundo' ? (
-    <RemoveBgPage tool={tool} />
-  ) : (
-    <GenericToolPage tool={tool} />
-  );
+  if (tool.id === 'remover-fundo') return <RemoveBgPage tool={tool} />;
+  if (tool.id === 'editar-pdf') return <PdfToolsPage tool={tool} />;
+  return <GenericToolPage tool={tool} />;
 }
 
 /** Título, opções, área de soltar e lista de arquivos. */

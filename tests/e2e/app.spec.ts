@@ -128,7 +128,7 @@ test.describe('área de soltar e lista de arquivos', () => {
     ]);
     const rows = page.getByTestId('file-row');
     await expect(rows).toHaveCount(3);
-    await expect(rows.nth(0)).toContainText('PDF · 15 B');
+    await expect(rows.nth(0)).toHaveClass(/file-row--ready/);
     await expect(rows.nth(1)).toContainText(
       'Esta ferramenta aceita PDF, e o conteúdo deste arquivo é PNG.',
     );

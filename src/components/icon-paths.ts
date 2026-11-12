@@ -34,6 +34,11 @@ export const ICON_PATHS = {
   maximize:
     'M4 8V6a2 2 0 0 1 2-2h2M4 16v2a2 2 0 0 0 2 2h2M16 4h2a2 2 0 0 1 2 2v2M16 20h2a2 2 0 0 0 2-2v-2',
   edit: 'M4 20h4L18.5 9.5a2.8 2.8 0 0 0-4-4L4 16zM13.5 6.5l4 4',
+  'rotate-cw': 'M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5',
+  'rotate-ccw': 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5',
+  'arrow-up': 'M12 19V5M12 5l-6 6M12 5l6 6',
+  'arrow-down': 'M12 5v14M12 19l-6-6M12 19l6-6',
+  crop: 'M7 3v14h14M3 7h14v14',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

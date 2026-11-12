@@ -626,3 +626,257 @@
     padding-top: var(--space-6);
   }
 }
+
+/* Editar PDF. */
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+}
+
+.choices--small .choice span {
+  padding: 4px 12px;
+  font-size: 0.875rem;
+}
+
+.choices__legend {
+  width: 100%;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.pdf-file-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.pdf-file-bar__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdf-file-bar__meta {
+  margin-right: auto;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pdf-toolbar,
+.pdf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.pdf-actions__info {
+  margin-right: auto;
+  color: var(--text-muted);
+}
+
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page-thumb {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-1);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.page-thumb:hover {
+  background: var(--surface-raised);
+}
+
+.page-thumb[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.page-thumb__frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.page-thumb__frame img {
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 0 0 1px var(--border);
+  background: #ffffff;
+  transition: transform 0.15s ease;
+}
+
+.page-thumb__label {
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.crop-layout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 200px;
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.crop-strip {
+  display: grid;
+  gap: var(--space-2);
+  width: 76px;
+  max-height: 70dvh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.crop-stage {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.crop-page {
+  position: relative;
+  width: 100%;
+  max-height: 70dvh;
+  max-width: 100%;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border);
+  background: #ffffff;
+}
+
+.crop-page img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+
+.crop-overlay {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.crop-rect {
+  position: absolute;
+  border: 2px dashed var(--accent);
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 45%);
+  cursor: move;
+}
+
+.crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+}
+
+.crop-handle--nw {
+  top: -2px;
+  left: -2px;
+  cursor: nwse-resize;
+}
+
+.crop-handle--ne {
+  top: -2px;
+  right: -2px;
+  cursor: nesw-resize;
+}
+
+.crop-handle--sw {
+  bottom: -2px;
+  left: -2px;
+  cursor: nesw-resize;
+}
+
+.crop-handle--se {
+  right: -2px;
+  bottom: -2px;
+  cursor: nwse-resize;
+}
+
+.crop-panel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.crop-panel__title {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.crop-panel__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.crop-field {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+}
+
+.crop-field input {
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.crop-scope {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+@media (max-width: 720px) {
+  .crop-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .crop-strip {
+    display: flex;
+    width: auto;
+    overflow-x: auto;
+  }
+
+  .crop-strip li {
+    width: 76px;
+    flex: none;
+  }
+}

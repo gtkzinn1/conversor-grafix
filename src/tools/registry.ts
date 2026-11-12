@@ -92,7 +92,7 @@ export const TOOLS: readonly ToolDefinition[] = [
       { id: 'para-imagem', label: 'PDF para imagem' },
     ],
     dropLabel: 'Solte os PDFs aqui',
-    availableInStage: 5,
+    availableInStage: null,
   },
 ];
 

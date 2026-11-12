@@ -1,75 +1,14 @@
-import * as pdfjs from 'pdfjs-dist';
-// O pdf.js roda num worker próprio, aninhado neste (canal de mensagens separado do app).
-import PdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?worker';
+import type * as pdfjs from 'pdfjs-dist';
 import { differingFraction } from '../tools/pdf-corel/pixel-diff';
+import {
+  OffscreenCanvasFactory,
+  openDocument,
+  withPdfjs,
+  type RenderParameters,
+} from './pdfjs-env';
 
 /** Largura das renderizações de conferência, em pixels (rápido e suficiente para achar sumiços). */
 const RENDER_WIDTH = 360;
-
-interface CanvasAndContext {
-  canvas: OffscreenCanvas;
-  context: OffscreenCanvasRenderingContext2D;
-}
-
-/** Fábrica de canvas para workers (o pdf.js usa `document` por padrão). */
-class OffscreenCanvasFactory {
-  create(width: number, height: number): CanvasAndContext {
-    const canvas = new OffscreenCanvas(Math.max(1, width), Math.max(1, height));
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-    if (!context) throw new Error('Canvas 2D indisponível no worker.');
-    return { canvas, context };
-  }
-  reset(target: CanvasAndContext, width: number, height: number): void {
-    target.canvas.width = Math.max(1, width);
-    target.canvas.height = Math.max(1, height);
-  }
-  destroy(target: CanvasAndContext): void {
-    target.canvas.width = 0;
-    target.canvas.height = 0;
-  }
-}
-
-/** Filtros SVG não existem em workers; sem eles o pdf.js desenha sem o efeito (igual nos dois lados). */
-class NoFilterFactory {
-  addFilter() {
-    return 'none';
-  }
-  addHCMFilter() {
-    return 'none';
-  }
-  addAlphaFilter() {
-    return 'none';
-  }
-  addLuminosityFilter() {
-    return 'none';
-  }
-  addHighlightHCMFilter() {
-    return 'none';
-  }
-  destroy() {
-    // nada a liberar
-  }
-}
-
-/** Abre o PDF; quem chama deve destruir a tarefa (`task.destroy()`) ao terminar. */
-function openDocument(data: Uint8Array, password: string | undefined) {
-  return pdfjs.getDocument({
-    // Cópia: o pdf.js transfere/consome o buffer recebido.
-    data: data.slice(),
-    ...(password === undefined ? {} : { password }),
-    CanvasFactory: OffscreenCanvasFactory,
-    FilterFactory: NoFilterFactory,
-    disableFontFace: true,
-    useSystemFonts: false,
-    useWorkerFetch: false,
-    isOffscreenCanvasSupported: true,
-    enableXfa: false,
-    stopAtErrors: false,
-    verbosity: pdfjs.VerbosityLevel.ERRORS,
-  });
-}
-
-type RenderParameters = Parameters<pdfjs.PDFPageProxy['render']>[0];
 
 async function renderPage(
   document: pdfjs.PDFDocumentProxy,
@@ -107,22 +46,20 @@ export async function compareVisually(
   onPage: (done: number, total: number) => void,
   maxPages = 50,
 ): Promise<number[]> {
-  const port = new PdfjsWorker();
-  pdfjs.GlobalWorkerOptions.workerPort = port;
-  const tasks = [openDocument(original, password), openDocument(fixed, undefined)] as const;
-  try {
-    const [before, after] = await Promise.all([tasks[0].promise, tasks[1].promise]);
-    const total = Math.min(before.numPages, after.numPages, maxPages);
-    const result: number[] = [];
-    for (let page = 1; page <= total; page++) {
-      const [a, b] = await Promise.all([renderPage(before, page), renderPage(after, page)]);
-      result.push(differingFraction(a, b));
-      onPage(page, total);
+  return withPdfjs(async () => {
+    const tasks = [openDocument(original, password), openDocument(fixed, undefined)] as const;
+    try {
+      const [before, after] = await Promise.all([tasks[0].promise, tasks[1].promise]);
+      const total = Math.min(before.numPages, after.numPages, maxPages);
+      const result: number[] = [];
+      for (let page = 1; page <= total; page++) {
+        const [a, b] = await Promise.all([renderPage(before, page), renderPage(after, page)]);
+        result.push(differingFraction(a, b));
+        onPage(page, total);
+      }
+      return result;
+    } finally {
+      await Promise.all(tasks.map((task) => task.destroy()));
     }
-    return result;
-  } finally {
-    await Promise.all(tasks.map((task) => task.destroy()));
-    pdfjs.GlobalWorkerOptions.workerPort = null;
-    port.terminate();
-  }
+  });
 }
