@@ -37,7 +37,7 @@ Estas regras valem para **todo** o desenvolvimento, sem exceção.
 | Visual        | **Tema escuro por padrão**, botão para alternar para o claro                           |
 | Marca         | Logo da Grafix (seção 7)                                                               |
 | Offline       | Funciona sem internet depois de instalado (o modelo de IA precisa ser baixado uma vez) |
-| Cores         | Mantém as originais; opção de converter para **CMYK (FOGRA39)**                        |
+| Cores         | Mantém as originais (conversão para CMYK fora do escopo, seção 2.5)                    |
 
 A hospedagem serve **apenas para entregar os arquivos do app** e permitir instalação e atualização automática. Toda conversão acontece no computador.
 
@@ -137,12 +137,9 @@ Imagens (layout B, escolhido pelo usuário em 2026-11-12):
 - **Converter:** formato (manter, JPG, PNG, WebP), qualidade de JPG/WebP (50–100%) e tamanho (original, largura em px, porcentagem ou largura em cm + DPI) numa tela só. A altura acompanha a largura. A transparência fica no PNG e no WebP; no JPG, vira fundo branco ou preto (escolha do usuário), com aviso. O DPI do original é mantido (JFIF/pHYs); "cm + DPI" grava o DPI escolhido. Orientação EXIF aplicada nos pixels. JPEG CMYK vira RGB, com aviso (o CMYK foi adiado: o modo de cor é trocado no CorelDRAW).
 - **Imagens para PDF:** miniaturas na ordem das páginas (arrastar ou setas), página "Tamanho da imagem" (DPI do arquivo, 72 sem ele), A4 ou A3 (folha deitada para imagem larga, imagem centralizada ocupando a área útil) e margem 0, 5 ou 10 mm. JPEG entra sem recompressão (CMYK mantido, orientação EXIF aplicada na página); PNG e WebP entram sem perda, com máscara de transparência. Até 200 imagens.
 
-### 2.5 Cores e CMYK
+### 2.5 Cores e CMYK — removida
 
-- Padrão: **manter cores originais**.
-- Opção **"Converter para CMYK"** quando fizer sentido.
-- Perfil: **FOGRA39**, usando o **ISO Coated v2 (ECI)** (baseado em FOGRA39, distribuição livre; o "Coated FOGRA39" da Adobe tem restrições de redistribuição). Conferir a licença do perfil e guardar o texto dela no repositório.
-- Motor: **Little CMS (lcms2)** em WebAssembly. Intenção de renderização padrão: colorimétrica relativa com compensação de ponto preto (configurável).
+As ferramentas mantêm as cores originais. A conversão para CMYK (lcms2 + ISO Coated v2 / FOGRA39) saiu do escopo em 2026-11-12: o modo de cor é trocado no CorelDRAW. Se for necessária no futuro, entra como etapa nova.
 
 ### 2.6 Fora do escopo
 
@@ -215,7 +212,6 @@ Notas:
 | Manipular PDF           | **pdf-lib**                                                                        | —                                 | MIT                       | Etapas 4–5                                                           |
 | Renderizar PDF          | **pdf.js** (`pdfjs-dist`), em worker aninhado, sem fontes do sistema e sem scripts | 6.4.299                           | Apache 2.0                | Em uso (Etapa 2: conferência visual)                                 |
 | IA                      | **ONNX Runtime Web** + BiRefNet ONNX                                               | —                                 | MIT                       | Etapa 3                                                              |
-| CMYK                    | **lcms2 em WASM**                                                                  | —                                 | MIT                       | Adiada (Etapa 7)                                                     |
 
 **Evitar** bibliotecas **AGPL** (ex.: MuPDF.js, Ghostscript WASM), a não ser que o usuário aprove depois de entender as obrigações da licença.
 
@@ -233,7 +229,6 @@ conversor-grafix/
 ├─ public/
 │  ├─ _headers                 # cabeçalhos de segurança (Cloudflare Pages)
 │  ├─ icons/                   # ícones do PWA (gerados por scripts/)
-│  └─ profiles/                # perfil ICC + licença (Etapa 7)
 ├─ scripts/                    # ícones, cabeçalhos no preview, compilação do qpdf WASM, PDFs de teste
 ├─ vendor/qpdf/                # qpdf compilado (gerado pelo workflow qpdf-wasm; hashes em BUILD-INFO)
 ├─ src/
@@ -425,9 +420,9 @@ Juntar, separar, extrair, girar, cortar (seção 2.4), comprimir, PDF → imagem
 
 JPG/PNG/WebP, redimensionar, imagens → PDF. **Aceite:** transparência preservada onde o formato permite; qualidade configurável.
 
-### Etapa 7 — CMYK (FOGRA39)
+### Etapa 7 — removida
 
-**Adiada** em 2026-11-12: o modo de cor é trocado no CorelDRAW depois da conversão; rever depois do uso das ferramentas atuais no dia a dia. Plano original: integrar lcms2 WASM e o perfil ISO Coated v2 (ECI) nas ferramentas aplicáveis. **Aceite:** conversões conferidas com valores de referência.
+CMYK saiu do escopo (seção 2.5). A numeração da etapa seguinte foi mantida.
 
 ### Etapa 8 — Revisão final e publicação
 
@@ -489,7 +484,8 @@ Atualizar a cada decisão técnica relevante.
 | 2026-11-12 | Imagens codificadas pelo próprio Chrome (`OffscreenCanvas.convertToBlob`) no worker; DPI gravado por nós no JFIF/pHYs                                   | Sem dependência nova; o navegador não grava DPI                                                                                                                                                                                                                          |
 | 2026-11-12 | PDF de imagens escrito por nós (~200 linhas), não pelo qpdf nem por pdf-lib                                                                             | Saída simples (uma imagem por página); JPEG entra como está (`DCTDecode`), sem perda e com CMYK mantido; orientação EXIF vira a matriz da página                                                                                                                         |
 | 2026-11-12 | ZIP próprio (sem compressão) para “Separar” e “PDF para imagem”                                                                                         | ~100 linhas, sem dependência; PDFs e imagens já vêm comprimidos                                                                                                                                                                                                          |
-| 2026-11-12 | Etapa 7 (CMYK) adiada                                                                                                                                   | O usuário troca o modo de cor no CorelDRAW depois de converter; rever depois do uso no dia a dia                                                                                                                                                                         |
+|            |
+| 2026-11-12 | Etapa 7 (CMYK) removida do escopo                                                                                                                       | O usuário troca o modo de cor no CorelDRAW; se precisar, adiciona no futuro como etapa nova                                                                                                                                                                              |
 | 2026-11-12 | Endereço `grafix-conversor.pages.dev`, sem domínio próprio                                                                                              | Escolhido pelo usuário                                                                                                                                                                                                                                                   |
 | 2026-11-12 | Sem Cloudflare Access                                                                                                                                   | Escolha do usuário: o app é público; os arquivos nunca saem do computador, então o link aberto não expõe dados                                                                                                                                                           |
 | 2026-11-12 | `main` protegida (CI “Lint, tipos, testes e build” obrigatório, sem force push nem exclusão); Dependabot e secret scanning (com push protection) ativos | Seção 8.2; sem revisão obrigatória, porque o projeto tem um só autor                                                                                                                                                                                                     |
