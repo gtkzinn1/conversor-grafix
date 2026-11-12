@@ -29,9 +29,9 @@ Na Grafix chegam todo dia arquivos de clientes que o CorelDRAW recusa ou importa
 | **Remover fundo de imagem** com IA (BiRefNet, local, WebGPU/WASM) e editor de ajuste                                                                                                     | **Pronta** (Etapa 3) |
 | **Editar PDF**: juntar, separar, extrair, girar, cortar por área, comprimir, PDF → imagem                                                                                                | **Pronta** (Etapa 5) |
 | **Converter imagens**: JPG/PNG/WebP com qualidade e tamanho (px, %, cm + DPI); imagens → PDF sem recomprimir JPEG                                                                        | **Pronta** (Etapa 6) |
-| **CMYK** com perfil ISO Coated v2 (FOGRA39)                                                                                                                                              | Planejada (Etapa 7)  |
+| **CMYK** com perfil ISO Coated v2 (FOGRA39)                                                                                                                                              | Adiada               |
 
-**Etapa atual: 7 (CMYK).** As Etapas 1 a 3, 5 e 6 estão prontas; a Etapa 4 (PSD → PDF) saiu do escopo.
+**Etapa atual: 8 (revisão final e publicação).** As Etapas 1 a 3, 5 e 6 estão prontas; a Etapa 4 (PSD → PDF) saiu do escopo e a 7 (CMYK) foi adiada.
 
 ### Como funciona a correção para o Corel
 
