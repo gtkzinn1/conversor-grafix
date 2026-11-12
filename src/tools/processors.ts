@@ -6,7 +6,8 @@ import { DEFAULT_LIMITS } from '../lib/shared/limits';
 import { markGpuFailed } from '../lib/storage';
 import { formatBytes } from '../lib/shared/limits';
 import type { ImageFormat } from '../lib/shared/tasks/pdf-render';
-import { editPdf, fixPdfForCorel, removeBackground, renderPdf } from '../lib/tasks';
+import type { ConvertSettings } from '../lib/shared/tasks/convert-image';
+import { editPdf, fixPdfForCorel, removeBackground, renderPdf, runImageTask } from '../lib/tasks';
 import { findModel } from './remove-bg/models';
 
 /** Resultado pronto para baixar. */
@@ -225,6 +226,35 @@ export function pdfBatchProcessor(
       }),
       summary: [pages(output.pageCount), `${String(settings.dpi)} DPI`, extension.toUpperCase()],
       warnings: [],
+    };
+  };
+}
+
+/** "Converter": formato e tamanho, um arquivo por vez na lista. */
+export function imageConvertProcessor(settings: ConvertSettings): Processor {
+  return async (file, { signal, onProgress }) => {
+    const output = await runImageTask({ kind: 'convert', file, settings }, { signal, onProgress });
+    const resized = settings.resize.kind !== 'original';
+    const sameExtension = file.name.toLowerCase().endsWith(`.${output.extension}`);
+    const suffix = !sameExtension ? '' : resized ? ' (redimensionado)' : ' (convertido)';
+    const summary = [
+      `${String(output.width)} × ${String(output.height)} px`,
+      output.extension.toUpperCase(),
+    ];
+    if (output.dpi !== null) summary.push(`${String(output.dpi)} DPI`);
+    summary.push(formatBytes(output.image.size));
+    const warnings: string[] = [];
+    if (output.transparencyFilled) {
+      warnings.push(
+        `O JPG não tem transparência: o fundo ficou ${settings.background === 'white' ? 'branco' : 'preto'}.`,
+      );
+    }
+    if (output.cmykToRgb) warnings.push('A imagem era CMYK e foi convertida para RGB.');
+    return {
+      blob: output.image,
+      fileName: deriveOutputName(file.name, { suffix, extension: output.extension }),
+      summary,
+      warnings,
     };
   };
 }

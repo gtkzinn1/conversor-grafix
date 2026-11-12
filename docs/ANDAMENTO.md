@@ -12,8 +12,8 @@ Atualizado em 2026-11-12.
 | 2. Corrigir PDF para o Corel  | Pronta                 | PR #6  |
 | 3. Remover fundo              | Pronta                 | PR #9  |
 | 4. PSD → PDF                  | **Removida** do escopo | PR #10 |
-| 5. Ferramentas de PDF         | Em revisão             | —      |
-| 6. Ferramentas de imagem      | Pendente               | —      |
+| 5. Ferramentas de PDF         | Pronta                 | PR #11 |
+| 6. Ferramentas de imagem      | Em revisão             | —      |
 | 7. CMYK (FOGRA39)             | Pendente               | —      |
 | 8. Revisão final e publicação | Pendente               | —      |
 
@@ -21,7 +21,8 @@ Atualizado em 2026-11-12.
 
 - **Corrigir PDF para o Corel:** resolve o "arquivo danificado" dos PDFs do Canva (remove a árvore de estrutura de acessibilidade), reescreve em PDF 1.4, remove conteúdo ativo, externaliza imagens embutidas (BI…EI) e troca degradês por cor sólida, com os degradês originais numa página de amostras no fim. Tudo via qpdf compilado para WebAssembly. Testado no CorelDRAW 27.
 - **Remover fundo:** BiRefNet 512 no processador (WASM) por padrão, 897 MB baixados uma vez por computador (revisão fixa + SHA-256, guardado no OPFS). Modelos de 1024 px na placa de vídeo como opção em "Sobre"; se a placa travar, volta sozinho para o processador. Fila de imagens e editor (Apagar, Restaurar, desfazer, zoom, Baixar PNG). Recorte de 24 MP em ~34 s.
-- **Editar PDF:** juntar (ordem ajustável), separar (ZIP), extrair e girar por miniaturas, cortar desenhando a área (só a página ou todas; redefine as caixas, sem rasterizar), comprimir (imagens em JPEG ou sem perda) e PDF → imagem (PNG/JPG, 150–600 DPI). Falta conferir os resultados no CorelDRAW 27.
+- **Editar PDF:** juntar (ordem ajustável), separar (ZIP), extrair e girar por miniaturas, cortar desenhando a área (só a página ou todas; redefine as caixas, sem rasterizar), comprimir (imagens em JPEG ou sem perda) e PDF → imagem (PNG/JPG, 150–600 DPI). Testado no CorelDRAW 27.
+- **Converter imagens:** JPG/PNG/WebP com qualidade, tamanho em px, % ou cm + DPI (DPI gravado no arquivo), transparência mantida no PNG/WebP e fundo branco ou preto no JPG. Imagens para PDF com miniaturas para ordenar, página no tamanho da imagem, A4 ou A3 e margem; JPEG entra sem recompressão (CMYK mantido).
 - **Casca do app:** PWA instalável e offline, tema claro/escuro, menu lateral (layout "bancada"), tela Sobre com licenças e o bloco "Modelo de IA".
 
 ## Pendências
@@ -48,4 +49,4 @@ npm ci
 
 Se já tiver o projeto: `git checkout main` e `git pull`, depois `npm ci`. Para abrir o app: `npm run build` e `npm run preview` (endereço `http://localhost:4173`).
 
-Para começar a próxima etapa, abrir uma sessão nova do Claude na pasta do projeto e pedir: "Etapa 5".
+Para começar a próxima etapa, abrir uma sessão nova do Claude na pasta do projeto e pedir: "Etapa 7".

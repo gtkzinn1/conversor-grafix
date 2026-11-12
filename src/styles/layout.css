@@ -627,11 +627,115 @@
   }
 }
 
-/* Editar PDF. */
+/* Editar PDF e Converter imagens. */
 .settings {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4) var(--space-6);
+}
+
+.settings__hint {
+  margin: calc(-1 * var(--space-2)) 0 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.number-field,
+.range-field {
+  display: grid;
+  align-content: start;
+}
+
+.number-field__row,
+.range-field__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+}
+
+.number-field input {
+  width: 7em;
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.range-field input {
+  width: 160px;
+  accent-color: var(--accent);
+}
+
+.range-field output {
+  min-width: 3em;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.image-card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: grab;
+}
+
+.image-card--dragged {
+  opacity: 0.5;
+}
+
+.image-card--rejected {
+  border-color: var(--danger);
+  cursor: default;
+}
+
+.image-card__frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+
+.image-card__frame img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.image-card__placeholder {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.image-card__name {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-card__error {
+  color: var(--danger);
+  font-size: 0.8125rem;
+}
+
+.image-card__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
 }
 
 .choices--small .choice span {

@@ -131,7 +131,11 @@ PDF: juntar, separar, extrair páginas, girar, **cortar**, comprimir, PDF → im
 - O corte redefine as caixas da página (`MediaBox` e `CropBox`, e `TrimBox`/`BleedBox` quando existirem), **sem rasterizar**: vetores, textos e imagens continuam como estão.
 - Limitação a deixar clara na interface: o conteúdo fora da área fica **escondido, não apagado** (continua dentro do arquivo). Apagar de verdade exigiria reescrever o conteúdo da página; fica como possível melhoria.
 - Conferir no CorelDRAW 27 se a importação respeita o corte (teste manual da Etapa 5).
-  Imagens: converter JPG/PNG/WebP, redimensionar, imagens → PDF.
+
+Imagens (layout B, escolhido pelo usuário em 2026-11-12):
+
+- **Converter:** formato (manter, JPG, PNG, WebP), qualidade de JPG/WebP (50–100%) e tamanho (original, largura em px, porcentagem ou largura em cm + DPI) numa tela só. A altura acompanha a largura. A transparência fica no PNG e no WebP; no JPG, vira fundo branco ou preto (escolha do usuário), com aviso. O DPI do original é mantido (JFIF/pHYs); "cm + DPI" grava o DPI escolhido. Orientação EXIF aplicada nos pixels. JPEG CMYK vira RGB, com aviso (CMYK fica para a Etapa 7).
+- **Imagens para PDF:** miniaturas na ordem das páginas (arrastar ou setas), página "Tamanho da imagem" (DPI do arquivo, 72 sem ele), A4 ou A3 (folha deitada para imagem larga, imagem centralizada ocupando a área útil) e margem 0, 5 ou 10 mm. JPEG entra sem recompressão (CMYK mantido, orientação EXIF aplicada na página); PNG e WebP entram sem perda, com máscara de transparência. Até 200 imagens.
 
 ### 2.5 Cores e CMYK
 
@@ -353,7 +357,7 @@ Abrir o endereço no Chrome → ícone de instalar na barra de endereço → **I
 
 ### 9.2 Conjunto de arquivos de teste (`tests/samples/`)
 
-Gerados por `scripts/samples/generate_samples.py` (sintéticos, sem dados de clientes). Arquivos reais de clientes são testados só localmente e nunca entram no repositório.
+Gerados por `scripts/samples/generate_samples.py` (PDFs) e `scripts/samples/generate_images.py` (imagens) (sintéticos, sem dados de clientes). Arquivos reais de clientes são testados só localmente e nunca entram no repositório.
 
 - O logo do pão de queijo (degradês com recorte).
 - PDFs com: object streams (PDF 1.5+), protegido sem senha, com senha de abertura, JPEG2000, JBIG2, várias páginas, Form XObjects, padrões de degradê, fontes embutidas, transparência, arquivo corrompido, arquivo vazio, arquivo que não é PDF com extensão `.pdf`.
@@ -481,6 +485,9 @@ Atualizar a cada decisão técnica relevante.
 | 2026-11-12 | Ferramentas de PDF com o qpdf (juntar, separar, extrair, girar, cortar, comprimir) e pdf.js (miniaturas, PDF → imagem)                        | Sem dependência nova; nada é rasterizado nas operações de PDF; saída sem object streams, como no “Corrigir PDF”, para o Corel                                                                                                                                            |
 | 2026-11-12 | Escolha de páginas por miniaturas (layout A)                                                                                                  | Escolhido pelo usuário entre miniaturas e campo de texto                                                                                                                                                                                                                 |
 | 2026-11-12 | Comprimir: “Reduzir imagens” usa `--optimize-images` do qpdf (JPEG, só quando fica menor); “Sem perda” só recomprime e tira o que não é usado | O qpdf não reduz a resolução das imagens; reamostrar fica como possível melhoria                                                                                                                                                                                         |
+| 2026-11-12 | Converter imagens no layout B: “Converter” (formato e tamanho juntos) e “Imagens para PDF” com miniaturas                                     | Escolhido pelo usuário entre B e A (três operações separadas)                                                                                                                                                                                                            |
+| 2026-11-12 | Imagens codificadas pelo próprio Chrome (`OffscreenCanvas.convertToBlob`) no worker; DPI gravado por nós no JFIF/pHYs                         | Sem dependência nova; o navegador não grava DPI                                                                                                                                                                                                                          |
+| 2026-11-12 | PDF de imagens escrito por nós (~200 linhas), não pelo qpdf nem por pdf-lib                                                                   | Saída simples (uma imagem por página); JPEG entra como está (`DCTDecode`), sem perda e com CMYK mantido; orientação EXIF vira a matriz da página                                                                                                                         |
 | 2026-11-12 | ZIP próprio (sem compressão) para “Separar” e “PDF para imagem”                                                                               | ~100 linhas, sem dependência; PDFs e imagens já vêm comprimidos                                                                                                                                                                                                          |
 
 ---

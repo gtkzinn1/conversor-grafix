@@ -67,12 +67,11 @@ export const TOOLS: readonly ToolDefinition[] = [
     icon: 'photo',
     accepts: ['png', 'jpeg', 'webp'],
     options: [
-      { id: 'formato', label: 'Trocar formato' },
-      { id: 'redimensionar', label: 'Redimensionar' },
+      { id: 'converter', label: 'Converter' },
       { id: 'para-pdf', label: 'Imagens para PDF' },
     ],
     dropLabel: 'Solte as imagens aqui',
-    availableInStage: 6,
+    availableInStage: null,
   },
   {
     id: 'editar-pdf',

@@ -29,6 +29,7 @@ export const ICON_PATHS = {
   undo: 'M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11',
   redo: 'M15 14l5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13',
   'arrow-left': 'M5 12h14M5 12l6 6M5 12l6-6',
+  'arrow-right': 'M19 12H5M19 12l-6 6M19 12l-6-6',
   minus: 'M5 12h14',
   plus: 'M12 5v14M5 12h14',
   maximize:

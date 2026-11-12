@@ -15,6 +15,7 @@ export type ErrorCode =
   | 'password-required'
   | 'wrong-password'
   | 'invalid-pdf'
+  | 'invalid-image'
   | 'validation-failed'
   | 'invalid-options'
   | 'model-download'
@@ -36,6 +37,7 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   'password-required': 'Este PDF tem senha de abertura. Digite a senha para continuar.',
   'wrong-password': 'A senha não confere. Confira e tente de novo.',
   'invalid-pdf': 'Não foi possível ler este PDF. Ele pode estar corrompido.',
+  'invalid-image': 'Não foi possível ler esta imagem. Ela pode estar corrompida.',
   'validation-failed':
     'O PDF corrigido não passou na conferência final, por isso não foi liberado. O original não foi alterado.',
   'invalid-options': 'As opções escolhidas não servem para este arquivo.',

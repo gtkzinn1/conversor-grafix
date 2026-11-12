@@ -5,6 +5,7 @@ import { Icon } from '../components/icon';
 import { PdfCropEditor } from '../components/pdf-crop-editor';
 import { PdfMergeList } from '../components/pdf-merge-list';
 import { PdfPagesEditor } from '../components/pdf-pages-editor';
+import { Segmented } from '../components/segmented';
 import { pdfBatchProcessor, type PdfBatchSettings } from '../tools/processors';
 import type { ToolDefinition } from '../tools/registry';
 import { MAX_QUEUE_SIZE, useFileQueue } from '../tools/use-file-queue';
@@ -17,40 +18,6 @@ const DEFAULT_SETTINGS: PdfBatchSettings = {
   imageFormat: 'png',
   dpi: 300,
 };
-
-/** Grupo de opções em botões (mesmo visual da escolha de operação). */
-function Segmented<T extends string | number>({
-  legend,
-  name,
-  value,
-  options,
-  onChange,
-}: {
-  legend: string;
-  name: string;
-  value: T;
-  options: readonly (readonly [T, string])[];
-  onChange: (value: T) => void;
-}) {
-  return (
-    <fieldset class="choices choices--small">
-      <legend class="choices__legend">{legend}</legend>
-      {options.map(([id, label]) => (
-        <label key={String(id)} class="choice">
-          <input
-            type="radio"
-            name={name}
-            checked={value === id}
-            onChange={() => {
-              onChange(id);
-            }}
-          />
-          <span>{label}</span>
-        </label>
-      ))}
-    </fieldset>
-  );
-}
 
 /** Separar, comprimir e PDF para imagem: vários arquivos, um resultado por arquivo. */
 function BatchView({ option, tool }: { option: BatchOption; tool: ToolDefinition }) {

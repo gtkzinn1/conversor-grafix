@@ -140,7 +140,8 @@ test.describe('área de soltar e lista de arquivos', () => {
     await page
       .getByTestId('file-input')
       .setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
-    await expect(page.getByTestId('file-row')).toContainText('PNG ·');
+    // O tipo é aceito e vai para a conversão; o conteúdo de teste é só a assinatura do PNG.
+    await expect(page.getByTestId('file-row')).toContainText('Não foi possível ler esta imagem.');
   });
 
   test('arrastar e soltar adiciona o arquivo', async ({ page }) => {

@@ -27,11 +27,11 @@ Na Grafix chegam todo dia arquivos de clientes que o CorelDRAW recusa ou importa
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | **Corrigir PDF para o CorelDRAW 27**: resolve o "arquivo danificado" dos PDFs do Canva, reescreve em PDF 1.4, remove conteúdo ativo e troca degradês que o Corel descarta por cor sólida | **Pronta** (Etapa 2) |
 | **Remover fundo de imagem** com IA (BiRefNet, local, WebGPU/WASM) e editor de ajuste                                                                                                     | **Pronta** (Etapa 3) |
-| **Editar PDF**: juntar, separar, extrair, girar, cortar por área, comprimir, PDF → imagem                                                                                                | Planejada (Etapa 5)  |
-| **Imagens**: converter, redimensionar, imagens → PDF                                                                                                                                     | Planejada (Etapa 6)  |
+| **Editar PDF**: juntar, separar, extrair, girar, cortar por área, comprimir, PDF → imagem                                                                                                | **Pronta** (Etapa 5) |
+| **Converter imagens**: JPG/PNG/WebP com qualidade e tamanho (px, %, cm + DPI); imagens → PDF sem recomprimir JPEG                                                                        | **Pronta** (Etapa 6) |
 | **CMYK** com perfil ISO Coated v2 (FOGRA39)                                                                                                                                              | Planejada (Etapa 7)  |
 
-**Etapa atual: 2 (Corrigir PDF para o Corel).** A Etapa 1 entregou a fundação: PWA offline, cabeçalhos de segurança, workers, interface e CI. As outras ferramentas já aparecem no app e conferem os arquivos recebidos; o processamento delas chega nas próximas etapas.
+**Etapa atual: 7 (CMYK).** As Etapas 1 a 3, 5 e 6 estão prontas; a Etapa 4 (PSD → PDF) saiu do escopo.
 
 ### Como funciona a correção para o Corel
 
@@ -106,6 +106,8 @@ npm run check       # formatação, lint, testes, build e testes ponta a ponta
 ```bash
 python -I scripts/generate-brand-assets.py   # requer Pillow
 ```
+
+As amostras de teste em `tests/samples/` são sintéticas: `scripts/samples/generate_samples.py` (PDFs, requer pikepdf) e `scripts/samples/generate_images.py` (imagens, requer Pillow).
 
 ## Publicação e instalação
 
